@@ -1,0 +1,66 @@
+<!-- ============================================================
+     MDbriefing 配色主題 — light（白底 / 米白底）
+     用法：.md frontmatter 寫 `theme: light`
+     規格：docs/briefing-spec.md §五「主題槽與標誌槽」
+
+     本檔只管配色與造型，**不含任何標誌**——標誌由 assets/logos/ 的標誌包
+     決定，兩者自由組合（白底＋TomoAid、白底無標誌、黑底＋TomoAid…）。
+
+     搭配標誌時：白底不需要底片（--logo-plate-* 全部歸零），彩色標誌的
+     原色本來就是為淺底設計的，直接放上即可，零加工。
+
+     可用色名（.md 寫「色：teal」）：
+       teal（預設）／yellow／purple／coral／navy／gold／blue／green
+     ⚠️ 淺底上亮色小字對比不足，故每個色名都附一個深一階的 -ink 版本，
+        供文字類元素（kicker / 驗收框標籤 / 封面大數字 / 折疊指示）使用。
+     ============================================================ -->
+
+<style>
+  :root{
+    /* 表面 */
+    --bg:#FAF8F5;
+    --surface:#FFFFFF;
+    --surface-2:#F3EFE8;
+    --border:#E9E4DC;
+    --border-light:#9F8D6F;
+
+    /* 文字三階（投影用：muted ≥7:1、secondary ≥11:1，
+       對 --bg／--surface／--surface-2 三個底色皆達標。第二輪再加深——鏡像
+       dark.html 的同一次修正，兩個主題的投影可讀性要求一致） */
+    --text-primary:#2B2B3A;
+    --text-secondary:#32323b;
+    --text-muted:#4f4f5d;
+
+    /* 重點色 ＋ 文字用的深一階（-ink）
+       -ink 全部 ≥4.5:1 on 卡片底 #FFFFFF（WCAG AA 小字標準）。
+       後三個（gold / blue / green）是深色主題的原生色名，在此也給值，
+       讓「為黑底寫的簡報」切到白底時不脫色、小字也不會太淡。 */
+    --yellow:#F6B40E;      --yellow-ink:#986F06;
+    --purple:#8B44E0;      --purple-ink:#7A2BD4;
+    --teal:#16C9B8;        --teal-ink:#0E8479;
+    --coral:#EE5A52;       --coral-ink:#D93B32;
+    --navy:#155A7C;        --navy-ink:#124B68;
+    --gold:#D4A843;        --gold-ink:#927021;
+    --blue:#5B8DEE;        --blue-ink:#2C5FC0;
+    --green:#6FCF97;       --green-ink:#1E7A48;
+    --accent-default:var(--teal);
+    --accent-ink-default:var(--teal-ink);
+    --accent-dim:#B9891A;
+    --accent:var(--accent-default);
+    --accent-ink:var(--accent-ink-default);
+    --prio-tint:0%;   /* 優先級徽章底色不疊色（純白＋同色邊框＋同色文字），見 deck.css §④ */
+
+    /* 造型：淺底適合較大圓角與柔和陰影 */
+    --radius:18px;
+    --radius-lg:22px;
+    --shadow:0 10px 30px rgba(43,43,58,.07);
+    --card-accent-width:4px;
+    --font-stack:"Noto Sans TC","PingFang TC","Microsoft JhengHei","Heiti TC",sans-serif;
+    --root-size:17px;
+
+    /* 標誌底片：淺底不需要，全部歸零 */
+    --logo-plate-bg:transparent;
+    --logo-plate-pad:0px;
+    --logo-plate-radius:0px;
+  }
+</style>

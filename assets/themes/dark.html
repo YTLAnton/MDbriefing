@@ -1,0 +1,62 @@
+<!-- ============================================================
+     MDbriefing 配色主題 — dark（黑底）｜**預設**
+     規格：docs/briefing-spec.md §五「主題槽與標誌槽」
+
+     這份的值與 deck.css §① 的預設值完全相同，所以 `theme: dark`（或省略）
+     時**不需要內嵌本檔**——本檔的作用是把「黑底主題長什麼樣」寫在一個地方
+     供對照，以及作為新配色主題的複製起點。
+
+     搭配標誌時：黑底會自動為標誌加上淺色底片（見 --logo-plate-*），
+     這樣任何品牌的原色標誌都不必改色也能完整可見。
+
+     可用色名（.md 寫「色：blue」）：gold（預設）／blue／green／yellow／purple／teal／coral／navy
+     ============================================================ -->
+
+<style>
+  :root{
+    /* 表面 */
+    --bg:#0d0f14;
+    --surface:#161920;
+    --surface-2:#1e2230;
+    --border:#2a2f3f;
+    --border-light:#606c8a;
+
+    /* 文字三階（投影用：muted ≥7:1、secondary ≥11:1，
+       對 --bg／--surface／--surface-2 三個底色皆達標。第二輪再提亮——見
+       assets/deck.css §① 的同一組 token 與註解） */
+    --text-primary:#e4e8f2;
+    --text-secondary:#d4d7e1;
+    --text-muted:#a5adc0;
+
+    /* 重點色（黑底上亮色字對比已足夠，故 -ink 等於本色）
+       八個色名皆 ≥4.5:1 on 卡片底 #161920；為淺色主題寫的簡報切到黑底
+       時也不會脫色（同色名在深色主題一律提亮）。 */
+    --gold:#d4a843;
+    --blue:#5b8dee;
+    --green:#6fcf97;
+    --yellow:#F9B233;
+    --purple:#A062E9;
+    --teal:#1ED9C6;
+    --coral:#F4695C;
+    --navy:#4EA6C7;
+    --accent-default:var(--gold);
+    --accent-ink-default:var(--accent-default);
+    --accent-dim:#a07c2e;
+    --accent:var(--accent-default);
+    --accent-ink:var(--accent);
+    --prio-tint:16%;   /* 優先級徽章（.prio）底色疊色比例，見 deck.css §④ */
+
+    /* 造型 */
+    --radius:10px;
+    --radius-lg:14px;
+    --shadow:0 4px 20px rgba(0,0,0,.35);
+    --card-accent-width:2px;
+    --font-stack:'Microsoft JhengHei','微軟正黑體','PingFang TC',system-ui,sans-serif;
+    --root-size:16px;
+
+    /* 標誌底片：黑底需要，讓原色標誌回到淺底上 */
+    --logo-plate-bg:#FAF8F5;
+    --logo-plate-pad:3px;
+    --logo-plate-radius:7px;
+  }
+</style>

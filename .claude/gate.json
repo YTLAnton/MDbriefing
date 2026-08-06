@@ -1,0 +1,17 @@
+{
+  "_comment": "MDbriefing 專案的 commit gate 檢查（由 Harness 全域 hooks/commit-gate.mjs 讀取，cwd 為本專案根目錄，故用相對路徑；execSync 的 cwd 固定為專案根，故指令內的 '.' 一律指向本專案根目錄）。本專案是純靜態 HTML 專案，沒有 lint／測試框架，四項檢查皆為手寫的機械掃描，對齊 docs/briefing-spec.md 與 README.md 的既有規則。commit 與 push 目前設成同一組（皆便宜、皆快），push 端額外接住任何繞過 commit gate 產生的變更（例如逃生門 CLAUDE_GATE_SKIP=1 或本 gate.json 建立之前的既有 commit）。",
+  "_known_limitation": "第 1 條指令寫死本機 Harness repo 的絕對路徑（/Users/anton/Anti/Harness），只在本機成立；Harness repo 若搬家或在別台機器上跑，需同步更新這裡的路徑。第 2～4 條是本專案 tools/ 下的自寫腳本，不依賴 Harness repo 路徑，具備可攜性。",
+  "_status_at_creation": "2026-08-05 建立時，第 1 條（*.md 語言掃描）對本專案現況跑出已知命中，包括 briefings/PMK/slide.md:55 與 content/PMK.md:114（同一詞的首字誤植為簡體字形）、以及 _PM/harness/sprint-001-new-project-setup/review.md:131 引用的 grep 樣式樣本，詳見 _PM/待決策與知會.md；在這些命中處理前，本專案的 git commit 會被這條檢查擋下，這是刻意的（不為了讓 gate 綠而放寬判定）。",
+  "commit": [
+    "node /Users/anton/Anti/Harness/hooks/scan-simplified.mjs --root . --rules /Users/anton/Anti/Harness/ops/09_language_and_output.md",
+    "node tools/scan-html-simplified.mjs",
+    "node tools/check-no-external-resources.mjs",
+    "node tools/check-embed-traps.mjs"
+  ],
+  "push": [
+    "node /Users/anton/Anti/Harness/hooks/scan-simplified.mjs --root . --rules /Users/anton/Anti/Harness/ops/09_language_and_output.md",
+    "node tools/scan-html-simplified.mjs",
+    "node tools/check-no-external-resources.mjs",
+    "node tools/check-embed-traps.mjs"
+  ]
+}

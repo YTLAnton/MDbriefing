@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>行銷數據自動化工具 服務報價提案 — Anton</title>
+  <style>
+    :root {
+      --bg: #0d0f14;
+      --surface: #161920;
+      --surface-2: #1e2230;
+      --border: #2a2f3f;
+      --border-light: #323849;
+      --text-primary: #e4e8f2;
+      --text-secondary: #7a849e;
+      --text-muted: #4a5268;
+      --accent: #d4a843;
+      --accent-dim: #a07c2e;
+      --blue: #5b8dee;
+      --blue-dim: rgba(91, 141, 238, 0.12);
+      --green: #6fcf97;
+      --green-dim: rgba(111, 207, 151, 0.08);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Microsoft JhengHei', '微軟正黑體', 'PingFang TC', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── 頁首 ── */
+    .site-header {
+      background: linear-gradient(160deg, #131720 0%, #0d0f14 100%);
+      border-bottom: 1px solid var(--border);
+      padding: clamp(36px, 6vw, 64px) 24px clamp(28px, 4vw, 48px);
+      text-align: center;
+    }
+
+    .site-header .label {
+      font-size: clamp(11px, 1.5vw, 13px);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+
+    .site-header h1 {
+      font-size: clamp(20px, 4vw, 30px);
+      font-weight: 700;
+      line-height: 1.45;
+      margin-bottom: 12px;
+      max-width: 720px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .site-header p {
+      font-size: clamp(13px, 1.8vw, 15px);
+      color: var(--text-secondary);
+      max-width: 720px;
+      margin: 0 auto;
+      line-height: 1.65;
+    }
+
+    .header-meta {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      margin-top: 22px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .header-meta .sep {
+      opacity: 0.4;
+    }
+
+    /* ── 容器 ── */
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: clamp(28px, 5vw, 48px) clamp(16px, 5vw, 28px) clamp(48px, 8vw, 72px);
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    /* ── 階段進度條 ── */
+    .phase-stepper {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 40px;
+      padding: 20px 0 4px;
+      overflow-x: auto;
+    }
+
+    .phase-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      min-width: 80px;
+    }
+
+    .phase-step-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--surface-2);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+    }
+
+    .phase-step.active .phase-step-circle {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #0d0f14;
+    }
+
+    .phase-step-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.45;
+      max-width: 96px;
+    }
+
+    .phase-step.active .phase-step-label {
+      color: var(--accent);
+    }
+
+    .phase-connector {
+      height: 2px;
+      width: clamp(28px, 7vw, 56px);
+      background: var(--border);
+      flex-shrink: 0;
+      margin-top: 19px;
+    }
+
+    /* ── 服務卡片 ── */
+    .services-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 36px;
+    }
+
+    .service-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .service-card:hover {
+      border-color: var(--border-light);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    }
+
+    .service-card.open {
+      border-color: var(--accent-dim);
+      box-shadow: 0 0 0 1px var(--accent-dim), 0 4px 24px rgba(0, 0, 0, 0.4);
+    }
+
+
+    .service-header {
+      display: flex;
+      align-items: center;
+      padding: clamp(16px, 3vw, 22px) clamp(16px, 3.5vw, 24px);
+      cursor: pointer;
+      user-select: none;
+      gap: 14px;
+    }
+
+    .service-header:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+      border-radius: 10px;
+    }
+
+    .service-name-wrap {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .service-name {
+      font-size: clamp(15px, 2.5vw, 17px);
+      font-weight: 600;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .service-subtitle {
+      font-size: clamp(11px, 1.6vw, 12.5px);
+      color: var(--text-muted);
+    }
+
+    .service-price {
+      font-size: clamp(14px, 2.5vw, 17px);
+      font-weight: 700;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .toggle-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .toggle-icon svg {
+      width: 12px;
+      height: 12px;
+      fill: none;
+      stroke: var(--text-secondary);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.28s ease, stroke 0.2s;
+    }
+
+    .service-card.open .toggle-icon {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .service-card.open .toggle-icon svg {
+      stroke: #0d0f14;
+      transform: rotate(180deg);
+    }
+
+    /* ── 展開細項 ── */
+    .service-details {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.32s ease;
+    }
+
+    .service-details-inner {
+      padding: 0 clamp(16px, 3.5vw, 24px) clamp(18px, 3vw, 24px);
+      border-top: 1px solid var(--border);
+    }
+
+    .detail-section {
+      margin-top: 18px;
+    }
+
+    .detail-section-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .service-details-inner ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .service-details-inner li {
+      display: flex;
+      gap: 12px;
+      font-size: clamp(13px, 2vw, 14.5px);
+      color: var(--text-secondary);
+      line-height: 1.65;
+      padding: 5px 0;
+    }
+
+    .service-details-inner li::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+      margin-top: 9px;
+      flex-shrink: 0;
+      opacity: 0.75;
+    }
+
+    /* ── 提示方塊 ── */
+    .note-block {
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: clamp(12px, 1.8vw, 13px);
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      line-height: 1.6;
+    }
+
+    .note-block .note-ico {
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .note-block strong {
+      font-weight: 700;
+    }
+
+    .note-client {
+      background: var(--blue-dim);
+      border: 1px solid rgba(91, 141, 238, 0.22);
+      color: var(--blue);
+    }
+
+    .note-client strong {
+      color: #8aabf5;
+    }
+
+    .note-infra {
+      background: var(--green-dim);
+      border: 1px solid rgba(111, 207, 151, 0.2);
+      color: var(--green);
+    }
+
+    .note-infra strong {
+      color: #8addb8;
+    }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-block;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      vertical-align: middle;
+    }
+
+    .badge-priority {
+      background: rgba(212, 168, 67, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(212, 168, 67, 0.3);
+    }
+
+    /* ── 費用試算 ── */
+    .bundle-block {
+      background: linear-gradient(135deg, #1a1f2e 0%, #13161f 100%);
+      border: 1px solid var(--accent-dim);
+      border-radius: 12px;
+      padding: clamp(24px, 4vw, 36px) clamp(20px, 4vw, 32px) clamp(20px, 3.5vw, 30px);
+      margin-bottom: 36px;
+      box-shadow: 0 0 40px rgba(212, 168, 67, 0.06);
+    }
+
+    .bundle-block .bundle-title {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+
+    .bundle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .bundle-row:last-child {
+      border-bottom: none;
+    }
+
+    .bundle-row .label {
+      font-size: clamp(13px, 2vw, 15px);
+      color: var(--text-secondary);
+    }
+
+    .bundle-row .value {
+      font-size: clamp(13px, 2vw, 15px);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .bundle-row.sub .label {
+      padding-left: 14px;
+      font-size: clamp(12px, 1.8vw, 13.5px);
+    }
+
+    .bundle-row.sub .value {
+      font-size: clamp(12px, 1.8vw, 13.5px);
+    }
+
+    .bundle-row.original .value {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .bundle-row.saving .value {
+      color: var(--green);
+    }
+
+    .bundle-row.divider {
+      border-bottom: 1px solid var(--border-light);
+      padding: 0;
+    }
+
+    .bundle-row.total {
+      padding-top: 18px;
+      margin-top: 4px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .bundle-row.total .label {
+      font-size: clamp(15px, 2.5vw, 17px);
+      font-weight: 700;
+    }
+
+    .bundle-row.total .value {
+      font-size: clamp(22px, 5vw, 28px);
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    /* ── 合作備注 ── */
+    .disclaimer-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: clamp(20px, 3vw, 28px) clamp(18px, 3.5vw, 26px);
+      margin-bottom: 36px;
+    }
+
+    .disclaimer-block .dis-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .disclaimer-block p {
+      font-size: clamp(12.5px, 1.9vw, 14px);
+      color: var(--text-secondary);
+      line-height: 1.75;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .disclaimer-block p:last-child {
+      border-bottom: none;
+    }
+
+    .disclaimer-block strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    /* ── 未來需求 ── */
+    .future-block {
+      background: var(--surface);
+      border: 1px dashed var(--border-light);
+      border-radius: 10px;
+      padding: clamp(20px, 3vw, 28px) clamp(18px, 3.5vw, 26px);
+      margin-bottom: 36px;
+    }
+
+    .future-block .future-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .future-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .future-item:last-child {
+      border-bottom: none;
+    }
+
+    .future-item-body {
+      flex: 1;
+    }
+
+    .future-item-name {
+      font-size: clamp(14px, 2.2vw, 15.5px);
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .future-item-desc {
+      font-size: clamp(12px, 1.8vw, 13px);
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .future-item-price {
+      font-size: clamp(13px, 2vw, 14px);
+      font-weight: 700;
+      color: var(--text-muted);
+      white-space: nowrap;
+      padding-top: 2px;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── 頁尾 ── */
+    .site-footer {
+      text-align: center;
+      padding: 24px 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── RWD ── */
+    @media (max-width: 480px) {
+      .service-header {
+        flex-wrap: wrap;
+      }
+
+      .service-name-wrap {
+        flex-basis: calc(100% - 40px);
+      }
+
+      .service-price {
+        flex-basis: calc(100% - 40px);
+        font-size: 15px;
+      }
+
+      .toggle-icon {
+        order: -1;
+        align-self: flex-start;
+        margin-top: 2px;
+        margin-left: auto;
+      }
+
+      .bundle-row.total .value {
+        font-size: 22px;
+      }
+
+      .header-meta {
+        flex-wrap: nowrap;
+        gap: 4px 10px;
+      }
+
+      .phase-stepper {
+        justify-content: center;
+      }
+
+      .future-item {
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .future-item-price {
+        align-self: flex-start;
+      }
+
+      .bundle-row.sub .label {
+        padding-left: 0;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .services-list {
+        gap: 12px;
+      }
+
+      .phase-connector {
+        width: clamp(48px, 8vw, 80px);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="site-header">
+    <div class="label">服務報價提案</div>
+    <h1>行銷數據自動化工具 開發專案</h1>
+    <p>三階段漸進式推進，從單一平台 CSV 轉換起步，逐步擴展至互動式 HTML Dashboard 部署。</p>
+    <div class="header-meta">
+      <span>客戶：瀚星文創</span>
+      <span class="sep">／</span>
+      <span>開發：Anton</span>
+      <span class="sep">／</span>
+      <span>報價日：2026 年 6 月 25 日</span>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- 階段流程圖 -->
+    <div class="phase-stepper" aria-label="專案推進順序">
+      <div class="phase-step active">
+        <div class="phase-step-circle">1A</div>
+        <div class="phase-step-label">單平台腳本</div>
+      </div>
+      <div class="phase-connector" aria-hidden="true"></div>
+      <div class="phase-step active">
+        <div class="phase-step-circle">1B</div>
+        <div class="phase-step-label">多平台格式擴展</div>
+      </div>
+      <div class="phase-connector" aria-hidden="true"></div>
+      <div class="phase-step active">
+        <div class="phase-step-circle">1C</div>
+        <div class="phase-step-label">HTML Dashboard</div>
+      </div>
+    </div>
+
+    <p class="section-title">服務項目與報價</p>
+
+    <div class="services-list">
+
+      <!-- Phase 1A -->
+      <div class="service-card" id="card-1a">
+        <div class="service-header" role="button" tabindex="0" aria-expanded="false" aria-controls="details-1a"
+          onclick="toggleCard(this)" onkeydown="handleKey(event,this)">
+          <span class="service-name-wrap">
+            <span class="service-name">
+              Phase 1A
+              <span class="badge badge-priority">首要優先</span>
+            </span>
+            <span class="service-subtitle">單一平台廣告數據 CSV 轉換腳本 ‧ 約 2 週交付</span>
+          </span>
+          <span class="service-price">NT$20,000</span>
+          <span class="toggle-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16">
+              <polyline points="3 6 8 11 13 6" />
+            </svg>
+          </span>
+        </div>
+        <div class="service-details" id="details-1a">
+          <div class="service-details-inner">
+            <div class="detail-section">
+              <div class="detail-section-title">交付內容</div>
+              <ul>
+                <li>將單一平台之廣告後台匯出的 CSV 自動轉換為結構化可閱讀報表</li>
+                <li>支援日數據彙整為週報（花費、觸及、轉換率等關鍵指標）</li>
+                <li>固定格式輸出（HTML 報表或 Excel，依協商確認）</li>
+                <li>操作說明文件一份</li>
+              </ul>
+            </div>
+            <div class="note-block note-client">
+              <span class="note-ico">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="3" width="12" height="10" rx="1.5" />
+                  <path d="M2 6h12" />
+                  <path d="M6 3v3" />
+                  <path d="M10 3v3" />
+                </svg>
+              </span>
+              <span>開發啟動前，需由 <strong>瀚星文創</strong> 提供：<strong>單一平台</strong> 廣告後台匯出的原始 CSV 範例（至少含 1 週數據，數值可隱匿），以及期望的輸出格式樣本。</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 1B -->
+      <div class="service-card" id="card-1b">
+        <div class="service-header" role="button" tabindex="0" aria-expanded="false" aria-controls="details-1b"
+          onclick="toggleCard(this)" onkeydown="handleKey(event,this)">
+          <span class="service-name-wrap">
+            <span class="service-name">Phase 1B</span>
+            <span class="service-subtitle">多平台格式擴展 ‧ 於 1A 完成，並確認啟動後約 3 週交付</span>
+          </span>
+          <span class="service-price">NT$22,000</span>
+          <span class="toggle-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16">
+              <polyline points="3 6 8 11 13 6" />
+            </svg>
+          </span>
+        </div>
+        <div class="service-details" id="details-1b">
+          <div class="service-details-inner">
+            <div class="detail-section">
+              <div class="detail-section-title">交付內容</div>
+              <ul>
+                <li>新增支援三個平台之廣告後台 CSV 格式解析模組</li>
+                <li>跨平台欄位正規化，統一輸出為一致格式</li>
+                <li>多平台合併報表，支援廣告組合交叉分析</li>
+                <li>更新操作說明文件</li>
+              </ul>
+            </div>
+            <div class="note-block note-client">
+              <span class="note-ico">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="3" width="12" height="10" rx="1.5" />
+                  <path d="M2 6h12" />
+                  <path d="M6 3v3" />
+                  <path d="M10 3v3" />
+                </svg>
+              </span>
+              <span>需由 <strong>瀚星文創</strong> 提供各平台匯出的原始 CSV 範例檔，以確認各平台欄位格式差異。</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 1C -->
+      <div class="service-card" id="card-1c">
+        <div class="service-header" role="button" tabindex="0" aria-expanded="false" aria-controls="details-1c"
+          onclick="toggleCard(this)" onkeydown="handleKey(event,this)">
+          <span class="service-name-wrap">
+            <span class="service-name">Phase 1C</span>
+            <span class="service-subtitle">互動式 HTML Dashboard 生成與部署 ‧ 於 1B 完成，並確認啟動後約 3 週交付</span>
+          </span>
+          <span class="service-price">NT$28,000</span>
+          <span class="toggle-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16">
+              <polyline points="3 6 8 11 13 6" />
+            </svg>
+          </span>
+        </div>
+        <div class="service-details" id="details-1c">
+          <div class="service-details-inner">
+            <div class="detail-section">
+              <div class="detail-section-title">交付內容</div>
+              <ul>
+                <li>將轉換後的廣告數據自動生成互動式 HTML Dashboard</li>
+                <li>Dashboard 部署至指定子網域，供全團隊隨時查閱</li>
+                <li>歷史數據保存機制</li>
+                <li>系統維護說明文件</li>
+              </ul>
+            </div>
+            <div class="note-block note-infra">
+              <span class="note-ico">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M8 2L2 5v4c0 3.3 2.5 5.8 6 7 3.5-1.2 6-3.7 6-7V5L8 2z" />
+                </svg>
+              </span>
+              <span>伺服器（VPS / 雲端主機）及子網域由 <strong>瀚星文創</strong> 自行申請並承擔費用；Anton 協助完成環境部署設定。預估基建費用約 NT$300–600 / 月。</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 費用試算 -->
+    <p class="section-title">費用試算</p>
+    <div class="bundle-block">
+      <p class="bundle-title">三階段費用明細</p>
+      <div class="bundle-row sub">
+        <span class="label">Phase 1A　Meta CSV 轉換腳本</span>
+        <span class="value">NT$20,000</span>
+      </div>
+      <div class="bundle-row sub">
+        <span class="label">Phase 1B　多平台格式擴展</span>
+        <span class="value">NT$22,000</span>
+      </div>
+      <div class="bundle-row sub">
+        <span class="label">Phase 1C　HTML Dashboard 生成與部署</span>
+        <span class="value">NT$28,000</span>
+      </div>
+      <div class="bundle-row original">
+        <span class="label">三階段單買合計</span>
+        <span class="value">NT$70,000</span>
+      </div>
+      <div class="bundle-row saving">
+        <span class="label">全套簽約折扣</span>
+        <span class="value">省 NT$8,000</span>
+      </div>
+      <div class="bundle-row total">
+        <span class="label">全套優惠總價</span>
+        <span class="value">NT$62,000</span>
+      </div>
+    </div>
+
+    <!-- 合作備注 -->
+    <p class="section-title">合作備注</p>
+    <div class="disclaimer-block">
+      <div class="dis-title">費用與合作條件說明</div>
+      <p>▸ <strong>Claude 開發費用</strong>由 Anton 承擔，已納入上述報價，瀚星文創無需另行支付Claude開發費用。</p>
+      <p>▸ <strong>伺服器、網域等基礎建設費用</strong>由瀚星文創自行申請並承擔（適用於 Phase 1C）。</p>
+      <p>▸ 各階段可<strong>獨立啟動</strong>，無需一次簽定全套。建議先完成 Phase 1A 驗收，確認成效後再推進下一階段。</p>
+      <p>▸ 合作形式為<strong>外包專案</strong>，Anton 以獨立開發者身份提供服務，雙方無雇傭關係。</p>
+      <p>▸ 報價有效期限為本文件出具後 <strong>30 日</strong>內。</p>
+    </div>
+
+    <!-- 未來需求 -->
+    <p class="section-title">未來需求（待評估）</p>
+    <div class="future-block">
+      <div class="future-title">以下項目因技術可行性尚待確認，暫不列入本次報價</div>
+      <div class="future-item">
+        <div class="future-item-body">
+          <div class="future-item-name">廣告數據自動排程下載</div>
+          <div class="future-item-desc">
+            定時對接各平台 API（Meta / Twitter / Reddit 等），自動下載最新廣告數據，免除人工匯出步驟。<br>
+            待評估原因：各平台 API 授權流程、Token 過期管理及潛在 API 費用（尤其 Twitter）差異較大，需進一步確認貴公司實際使用平台後再行估價。
+          </div>
+        </div>
+        <div class="future-item-price">待評估</div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    &copy; 2026 Anton｜如有疑問歡迎隨時聯絡
+  </footer>
+
+  <script>
+    function toggleCard(headerEl) {
+      var card = headerEl.closest('.service-card');
+      var detailsEl = card.querySelector('.service-details');
+      var isOpen = card.classList.contains('open');
+      if (isOpen) {
+        detailsEl.style.maxHeight = detailsEl.scrollHeight + 'px';
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { detailsEl.style.maxHeight = '0'; });
+        });
+        card.classList.remove('open');
+        headerEl.setAttribute('aria-expanded', 'false');
+      } else {
+        card.classList.add('open');
+        detailsEl.style.maxHeight = detailsEl.scrollHeight + 'px';
+        headerEl.setAttribute('aria-expanded', 'true');
+      }
+    }
+    function handleKey(event, headerEl) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        toggleCard(headerEl);
+      }
+    }
+  </script>
+
+</body>
+
+</html>

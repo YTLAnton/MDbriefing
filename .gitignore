@@ -1,0 +1,15 @@
+# ── macOS ──────────────────────────────────────────────
+.DS_Store
+**/.DS_Store
+
+# ── 內部參考資料（不入版控）─────────────────────────────
+# _PM/resource/ 是視覺基準簡報（TomoAid 內部文件，含團隊成員、試用期條件、
+# 各項目商業定位）。該抄的規範已條文化在 docs/briefing-spec.md，實作看
+# briefings/demo/index.html 即可，原檔不需進 git 歷史。
+_PM/resource/
+
+# ── 誤生成的 Windows 路徑目錄 ──────────────────────────
+# 舊版 ~/.claude/statusline.sh 把 "C:/Users/..." 當相對路徑，於當下工作目錄
+# 憑空建出一個名為 C: 的資料夾。冒號在 Windows 是非法檔名字元，一旦被 commit，
+# 在 Windows 上 clone 會直接失敗。腳本已修（改用 $HOME），此處防再犯。
+C:/

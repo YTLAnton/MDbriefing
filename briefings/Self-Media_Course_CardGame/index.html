@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>自媒體課程卡牌遊戲 服務報價提案 — Anton</title>
+  <style>
+    /* ── CSS 變數（暗色系色票） ── */
+    :root {
+      --bg:           #0d0f14;
+      --surface:      #161920;
+      --surface-2:    #1e2230;
+      --border:       #2a2f3f;
+      --border-light: #323849;
+      --text-primary: #e4e8f2;
+      --text-secondary: #7a849e;
+      --text-muted:   #4a5268;
+      --accent:       #d4a843;
+      --accent-dim:   #a07c2e;
+      --accent-glow:  rgba(212, 168, 67, 0.15);
+      --red-dim:      #5a3a3a;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Microsoft JhengHei', '微軟正黑體', 'PingFang TC', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── 頁首 ── */
+    .site-header {
+      background: linear-gradient(160deg, #131720 0%, #0d0f14 100%);
+      border-bottom: 1px solid var(--border);
+      padding: clamp(36px, 6vw, 64px) 24px clamp(32px, 5vw, 56px);
+      text-align: center;
+    }
+
+    .site-header .label {
+      font-size: clamp(11px, 1.5vw, 13px);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+
+    .site-header h1 {
+      font-size: clamp(20px, 4vw, 30px);
+      font-weight: 700;
+      line-height: 1.45;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .site-header p {
+      font-size: clamp(13px, 1.8vw, 15px);
+      color: var(--text-secondary);
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── 主內容容器 ── */
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: clamp(28px, 5vw, 48px) clamp(16px, 5vw, 28px) clamp(48px, 8vw, 72px);
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    /* ── 服務卡片 ── */
+    .services-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 36px;
+    }
+
+    .service-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .service-card:hover {
+      border-color: var(--border-light);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    }
+
+    .service-card.open {
+      border-color: var(--accent-dim);
+      box-shadow: 0 0 0 1px var(--accent-dim), 0 4px 24px rgba(0,0,0,0.4);
+    }
+
+    .service-header {
+      display: flex;
+      align-items: center;
+      padding: clamp(16px, 3vw, 22px) clamp(16px, 3.5vw, 24px);
+      cursor: pointer;
+      user-select: none;
+      gap: 14px;
+    }
+
+    .service-header:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+      border-radius: 10px;
+    }
+
+    .service-name {
+      font-size: clamp(15px, 2.5vw, 17px);
+      font-weight: 600;
+      color: var(--text-primary);
+      flex: 1;
+    }
+
+    .service-price {
+      font-size: clamp(14px, 2.5vw, 17px);
+      font-weight: 700;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .toggle-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .toggle-icon svg {
+      width: 12px;
+      height: 12px;
+      fill: none;
+      stroke: var(--text-secondary);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.28s ease, stroke 0.2s;
+    }
+
+    .service-card.open .toggle-icon {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .service-card.open .toggle-icon svg {
+      stroke: #0d0f14;
+      transform: rotate(180deg);
+    }
+
+    /* ── 展開細項 ── */
+    .service-details {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.32s ease;
+    }
+
+    .service-details-inner {
+      padding: 0 clamp(16px, 3.5vw, 24px) clamp(16px, 3vw, 22px);
+      border-top: 1px solid var(--border);
+    }
+
+    .service-details-inner ul {
+      list-style: none;
+      padding: 14px 0 0;
+    }
+
+    .service-details-inner li {
+      display: flex;
+      gap: 12px;
+      font-size: clamp(13px, 2vw, 14.5px);
+      color: var(--text-secondary);
+      line-height: 1.65;
+      padding: 5px 0;
+    }
+
+    .service-details-inner li::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+      margin-top: 9px;
+      flex-shrink: 0;
+      opacity: 0.8;
+    }
+
+    /* ── 全包優惠 ── */
+    .bundle-block {
+      background: linear-gradient(135deg, #1a1f2e 0%, #13161f 100%);
+      border: 1px solid var(--accent-dim);
+      border-radius: 12px;
+      padding: clamp(24px, 4vw, 36px) clamp(20px, 4vw, 32px) clamp(20px, 3.5vw, 30px);
+      color: var(--text-primary);
+      margin-bottom: 36px;
+      box-shadow: 0 0 40px rgba(212, 168, 67, 0.06);
+    }
+
+    .bundle-block .bundle-title {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+
+    .bundle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .bundle-row:last-child {
+      border-bottom: none;
+    }
+
+    .bundle-row .label {
+      font-size: clamp(13px, 2vw, 15px);
+      color: var(--text-secondary);
+    }
+
+    .bundle-row .value {
+      font-size: clamp(13px, 2vw, 15px);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .bundle-row.original .value {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .bundle-row.saving .value {
+      color: #6fcf97;
+    }
+
+    .bundle-row.total {
+      padding-top: 18px;
+      margin-top: 6px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .bundle-row.total .label {
+      font-size: clamp(15px, 2.5vw, 17px);
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .bundle-row.total .value {
+      font-size: clamp(22px, 5vw, 28px);
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    /* ── 協作提示 ── */
+    .service-collab {
+      margin-top: 14px;
+      padding: 10px 14px;
+      background: rgba(212, 168, 67, 0.07);
+      border: 1px solid rgba(212, 168, 67, 0.2);
+      border-radius: 6px;
+      font-size: clamp(12px, 1.8vw, 13px);
+      color: var(--accent);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.55;
+    }
+
+    .service-collab .collab-ico {
+      flex-shrink: 0;
+      margin-top: 2px;
+      opacity: 0.85;
+    }
+
+    .service-collab strong {
+      font-weight: 700;
+      color: #e0c070;
+    }
+
+    /* ── 頁尾 ── */
+    .site-footer {
+      text-align: center;
+      padding: 24px 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── RWD 中斷點 ── */
+    @media (max-width: 480px) {
+      .service-header {
+        flex-wrap: wrap;
+      }
+
+      .service-name {
+        flex-basis: calc(100% - 40px);
+      }
+
+      .service-price {
+        flex-basis: calc(100% - 40px);
+        font-size: 15px;
+      }
+
+      .toggle-icon {
+        position: relative;
+        margin-left: auto;
+        order: -1;
+        align-self: flex-start;
+        margin-top: 2px;
+      }
+
+      .bundle-row.total .value {
+        font-size: 22px;
+      }
+    }
+
+    @media (min-width: 481px) and (max-width: 767px) {
+      .service-header {
+        padding: 18px 20px;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .services-list {
+        gap: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="label">服務報價提案</div>
+    <h1>自媒體課程卡牌遊戲 製作專案</h1>
+    <p>以下五項服務可依需求自由選擇，每項可點擊展開查看細節說明。</p>
+  </header>
+
+  <main class="container">
+
+    <p class="section-title">服務項目與報價</p>
+
+    <div class="services-list">
+
+      <!-- 1. 遊戲設計 -->
+      <div class="service-card" id="card-1">
+        <div class="service-header" role="button" tabindex="0" aria-expanded="false" aria-controls="details-1" onclick="toggleCard(this)" onkeydown="handleKey(event, this)">
+          <span class="service-name">A. 遊戲設計</span>
+          <span class="service-price">NT$20,000</span>
+          <span class="toggle-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16"><polyline points="3 6 8 11 13 6"/></svg>
+          </span>
+        </div>
+        <div class="service-details" id="details-1">
+          <div class="service-details-inner">
+            <ul>
+              <li>討論並確認卡牌工具的使用情境與目標</li>
+              <li>設計玩家操作流程（如何抽牌、如何使用）</li>
+              <li>規劃卡牌內容架構（分類方式、張數配比）</li>
+            </ul>
+            <div class="service-collab">
+              <span class="collab-ico"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="3.5" cy="8" r="2"/><circle cx="12.5" cy="4" r="2"/><circle cx="12.5" cy="12" r="2"/><line x1="5.5" y1="7.1" x2="10.5" y2="4.9"/><line x1="5.5" y1="8.9" x2="10.5" y2="11.1"/></svg></span>
+              <span>本項需要由 <strong>雇主 莊先生</strong> 進行卡牌的內容撰寫。</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. 說明書撰寫 -->
+      <div class="service-card" id="card-2">
+        <div class="service-header" role="button" tabindex="0" aria-expanded="false" aria-controls="details-2" onclick="toggleCard(this)" onkeydown="handleKey(event, this)">
+          <span class="service-name">B. 說明書撰寫</span>
+          <span class="service-price">NT$22,000</span>
+          <span class="toggle-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16"><polyline points="3 6 8 11 13 6"/></svg>
+          </span>
+        </div>
+        <div class="service-details" id="details-2">
+          <div class="service-details-inner">
+            <ul>
+              <li>撰寫玩家說明書全文</li>
+              <li>與美術來回校稿（含 2 輪修改）</li>
+              <li>確保文字與卡牌設計一致</li>
+            </ul>
+            <div class="service-collab">
+              <span class="collab-ico"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="3.5" cy="8" r="2"/><circle cx="12.5" cy="4" r="2"/><circle cx="12.5" cy="12" r="2"/><line x1="5.5" y1="7.1" x2="10.5" y2="4.9"/><line x1="5.5" y1="8.9" x2="10.5" y2="11.1"/></svg></span>
+              <span>校稿流程需與 <strong>美術人員</strong> 配合提供排版稿件，為雙向協作項目。</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. 專案跟進 -->
+      <div class="service-card" id="card-3">
+        <div class="service-header" role="button" tabindex="0" aria-expanded="false" aria-controls="details-3" onclick="toggleCard(this)" onkeydown="handleKey(event, this)">
+          <span class="service-name">C. 專案跟進</span>
+          <span class="service-price">NT$28,000</span>
+          <span class="toggle-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16"><polyline points="3 6 8 11 13 6"/></svg>
+          </span>
+        </div>
+        <div class="service-details" id="details-3">
+          <div class="service-details-inner">
+            <ul>
+              <li>擔任專案經理角色，統整各方進度</li>
+              <li>定期確認時程、追蹤任務完成狀況</li>
+              <li>對接雇主、美術、印刷廠等各方人員</li>
+            </ul>
+            <div class="service-collab">
+              <span class="collab-ico"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="3.5" cy="8" r="2"/><circle cx="12.5" cy="4" r="2"/><circle cx="12.5" cy="12" r="2"/><line x1="5.5" y1="7.1" x2="10.5" y2="4.9"/><line x1="5.5" y1="8.9" x2="10.5" y2="11.1"/></svg></span>
+              <span>本項涉及多方協作，包含 <strong>雇主 莊先生、美術人員、印刷廠</strong> 等外部執行方，各方進度將由 Anton 統整協調。</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. 印刷廠協調 -->
+      <div class="service-card" id="card-4">
+        <div class="service-header" role="button" tabindex="0" aria-expanded="false" aria-controls="details-4" onclick="toggleCard(this)" onkeydown="handleKey(event, this)">
+          <span class="service-name">D. 印刷廠協調</span>
+          <span class="service-price">NT$25,000</span>
+          <span class="toggle-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16"><polyline points="3 6 8 11 13 6"/></svg>
+          </span>
+        </div>
+        <div class="service-details" id="details-4">
+          <div class="service-details-inner">
+            <ul>
+              <li>詢價報價與印刷廠溝通</li>
+              <li>確認印刷規格與交期</li>
+              <li>追蹤生產進度至交貨</li>
+            </ul>
+            <div class="service-collab">
+              <span class="collab-ico"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="3.5" cy="8" r="2"/><circle cx="12.5" cy="4" r="2"/><circle cx="12.5" cy="12" r="2"/><line x1="5.5" y1="7.1" x2="10.5" y2="4.9"/><line x1="5.5" y1="8.9" x2="10.5" y2="11.1"/></svg></span>
+              <span>需由 <strong>美術</strong> 提供完稿檔案以及進行看印看色，與 <strong>合作印刷廠</strong> 確認規格與時程。</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. 線框稿 / UIUX 設計 -->
+      <div class="service-card" id="card-5">
+        <div class="service-header" role="button" tabindex="0" aria-expanded="false" aria-controls="details-5" onclick="toggleCard(this)" onkeydown="handleKey(event, this)">
+          <span class="service-name">E. 線框稿 / UIUX 設計</span>
+          <span class="service-price">NT$20,000</span>
+          <span class="toggle-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16"><polyline points="3 6 8 11 13 6"/></svg>
+          </span>
+        </div>
+        <div class="service-details" id="details-5">
+          <div class="service-details-inner">
+            <ul>
+              <li>提供卡牌版面與盒子的設計方向</li>
+              <li>產出線框稿供美術執行參考</li>
+              <li>與美術來回確認設計是否符合使用邏輯</li>
+            </ul>
+            <div class="service-collab">
+              <span class="collab-ico"><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="3.5" cy="8" r="2"/><circle cx="12.5" cy="4" r="2"/><circle cx="12.5" cy="12" r="2"/><line x1="5.5" y1="7.1" x2="10.5" y2="4.9"/><line x1="5.5" y1="8.9" x2="10.5" y2="11.1"/></svg></span>
+              <span>線框稿產出後，視覺完稿由 <strong>美術師</strong> 接手執行，Anton 負責來回確認設計邏輯是否符合需求。</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 全包優惠 -->
+    <div class="bundle-block">
+      <p class="bundle-title">全包優惠方案</p>
+      <div class="bundle-row original">
+        <span class="label">五項單買合計</span>
+        <span class="value">NT$115,000</span>
+      </div>
+      <div class="bundle-row saving">
+        <span class="label">全包折扣</span>
+        <span class="value">省 NT$15,000</span>
+      </div>
+      <div class="bundle-row total">
+        <span class="label">全包優惠價</span>
+        <span class="value">NT$100,000</span>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    &copy; 2026 Anton｜如有疑問歡迎隨時聯絡
+  </footer>
+
+  <script>
+    function toggleCard(headerEl) {
+      var card = headerEl.closest('.service-card');
+      var detailsEl = card.querySelector('.service-details');
+      var isOpen = card.classList.contains('open');
+
+      if (isOpen) {
+        detailsEl.style.maxHeight = detailsEl.scrollHeight + 'px';
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            detailsEl.style.maxHeight = '0';
+          });
+        });
+        card.classList.remove('open');
+        headerEl.setAttribute('aria-expanded', 'false');
+      } else {
+        card.classList.add('open');
+        detailsEl.style.maxHeight = detailsEl.scrollHeight + 'px';
+        headerEl.setAttribute('aria-expanded', 'true');
+      }
+    }
+
+    function handleKey(event, headerEl) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        toggleCard(headerEl);
+      }
+    }
+  </script>
+
+</body>
+</html>

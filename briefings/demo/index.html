@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>一份 Markdown，16 種版面區塊 — MDbriefing</title>
+<!--
+  MDbriefing golden 對照組
+  原稿：content/demo.md（theme: dark / logo: none）
+  規格：docs/briefing-spec.md
+  來源：assets/deck.css、assets/deck.js
+  ↑ 全部於此整段內嵌，維持單檔自包含、file:// 可直接開、零外部資源。
+  改動樣式或互動請先改 assets/ 再重新內嵌，勿只改本檔。
+-->
+<style>
+/* ══════════════ 內嵌：assets/deck.css ══════════════ */
+/* ============================================================
+   MDbriefing — deck.css
+   簡報共用樣式（設計系統真理來源）
+
+   ⚠️ 對焦範圍只有「形態」：一頁一螢幕、滾動吸附、翻頁、目錄、可折疊、
+      逐項浮現。視覺**不跟任何外部簡報對焦**——本檔的預設值是本專案原有的
+      深色系（來源：briefings/AD_data_transfer_bot/ 與
+      briefings/Self-Media_Course_CardGame/ 兩份既有檔案的色票與造型）。
+
+   🎨 底色與標誌是兩個獨立的槽，依觀眾各自決定：
+        theme: dark(預設) | light        → assets/themes/ ，管配色與造型
+        logo : none(預設) | tomoaid | …  → assets/logos/  ，管標誌（官方原色，不改色）
+      本檔 §① 的每一個 token 都可被主題整組覆寫；以下所有規則只引用 token、
+      不寫死顏色，所以換主題不需要改這裡任何一行。
+
+   用法：產出 briefings/主題/index.html 時，把本檔內容整段內嵌進 HTML 的
+        style 區塊（保持單檔自包含、file:// 可直接開、零外部資源）。
+   注意：本檔的註解與內容都不可出現字面上的「結束 style 標籤」字串，
+        否則內嵌後會提前關閉樣式區塊，後半段樣式會被當文字印在頁面上。
+   規格：docs/briefing-spec.md
+   ============================================================ */
+
+/* ── ① 設計 token｜預設主題：專案深色系 ─────────────────────
+   主題包（assets/themes/*.html）就是重新宣告這一區的值。
+   換主題**必須**至少覆寫：三個表面色、三階文字色、--accent-default、
+   --accent-dim；其餘（造型、字族、重點色別名）可選擇性覆寫。 */
+:root{
+  /* 底色與表面 */
+  --bg:#0d0f14;
+  --surface:#161920;
+  --surface-2:#1e2230;
+  --border:#2a2f3f;
+  --border-light:#606c8a; /* ≥3:1 on --surface-2（目錄未選中圓點，非文字，WCAG 非文字對比門檻） */
+
+  /* 文字三階
+     ⚠️ 這三階是給**投影**用的，不是給近距離閱讀用的。觀眾隔著會議室看投影機
+     或電視，對比要遠高於桌面文件；本專案兩份既有報價文件的淡色次要文字
+     （--text-muted 曾是 #4a5268，僅 2.46:1）在投影下讀不出來。
+     現值（第二輪再提亮，因為第一輪的 muted ≥4.5:1／secondary ≥7:1 在投影機
+     上仍被形容為「灰」）：muted ≥7:1、secondary ≥11:1，且對 --bg／--surface／
+     --surface-2 三個底色皆達標（--surface-2 是 th／.pill／.flow .node 的底，
+     三者中最深，最吃虧，故以它為準）。
+     ⚠️ 提亮後 primary／secondary 兩階的 CIE L* 間距被壓縮到 Δ5.94（低於原本
+     Δ8 的分層基準），因為 secondary 已經逼近 primary 才能達到 11:1；細節與
+     取捨見 docs/briefing-spec.md §一。 */
+  --text-primary:#e4e8f2;
+  --text-secondary:#d4d7e1;
+  --text-muted:#a5adc0;
+
+  /* 重點色
+     --accent-default：這個主題的預設重點色（每頁沒指定「色」時用它）
+     --accent-dim    ：重點色的暗一階，用於虛線框、展開後的邊框
+     其餘是本主題提供的可選色名，作者在 .md 寫「色：blue」就是選這裡的名字。
+     可用色名由主題決定；寫了主題沒有的色名會自動退回 --accent-default。 */
+  --gold:#d4a843;
+  --blue:#5b8dee;
+  --green:#6fcf97;
+  /* 以下五個色名讓「為淺色主題寫的簡報」切到黑底時也不脫色。
+     同一個色名在不同主題有各自的值（深色主題一律提亮），這是雙主題
+     設計系統的常規做法；此處全部 ≥4.5:1 on 卡片底 #161920。 */
+  --yellow:#F9B233;
+  --purple:#A062E9;
+  --teal:#1ED9C6;
+  --coral:#F4695C;
+  --navy:#4EA6C7;
+  --accent-default:var(--gold);
+  --accent-ink-default:var(--accent-default);
+  --accent-dim:#a07c2e;
+  --accent:var(--accent-default);
+  /* --accent-ink：重點色「當文字用」的版本。深色主題上亮色字對比本來就夠，
+     所以預設等於 --accent；淺色主題必須覆寫成深一階，否則小字會看不清。 */
+  --accent-ink:var(--accent);
+
+  /* 優先級徽章（.prio）底色疊色比例。深色主題疊色明顯（膠囊感），淺色主題
+     疊色歸零——因為淺色的 -ink 系列色只保證「on #FFFFFF」達到 4.5:1，沒有
+     再疊色的餘裕（疊色會讓底色偏暗、對比往下掉），所以淺色改以「純白底＋
+     同色邊框＋同色文字」分辨三級，深色則用疊色膠囊。實測見
+     docs/briefing-spec.md §三。 */
+  --prio-tint:16%;
+
+  /* 造型 */
+  --radius:10px;
+  --radius-lg:14px;
+  --shadow:0 4px 20px rgba(0,0,0,.35);
+  --card-accent-width:2px;      /* 卡片上緣的重點色粗細 */
+  --font-stack:'Microsoft JhengHei','微軟正黑體','PingFang TC',system-ui,sans-serif;
+  --root-size:16px;
+
+  /* 標誌槽（由標誌包提供；預設不掛任何標誌） */
+  --brand-name:"";
+
+  /* 標誌底片（keyline plate）：深色底放彩色標誌時，用一層淺色底片讓標誌
+     回到它被設計的底色上——**標誌本身一個像素都不改**。
+     淺色主題把這三個值設為 transparent / 0 / 0，底片就自動消失。
+     單份簡報要強制關掉底片：在產出的 style 末尾覆寫這三個值即可。 */
+  --logo-plate-bg:#FAF8F5;
+  --logo-plate-pad:3px;
+  --logo-plate-radius:7px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+html{
+  font-size:var(--root-size);
+  scroll-snap-type:y proximity;   /* 互動 1：滾動吸附翻頁 */
+  scroll-behavior:smooth;         /* 互動 2：目錄跳轉時平滑捲動 */
+}
+
+body{
+  font-family:var(--font-stack);
+  background:var(--bg);
+  color:var(--text-primary);
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+
+img{max-width:100%}
+
+/* ── ② 頁（slide）骨架 ──────────────────────────────────── */
+section.slide{
+  min-height:100vh;
+  scroll-snap-align:start;
+  position:relative;
+  display:flex; flex-direction:column; justify-content:center;
+  padding:clamp(32px,5vh,56px) clamp(20px,6vw,76px);
+  overflow:hidden;
+}
+section.slide.cover{align-items:center; text-align:center}
+
+/* 標誌底片：三個尺寸共用同一組 token，淺色主題下自動歸零 */
+.logo-plate{
+  display:inline-flex; align-items:center; justify-content:center;
+  background:var(--logo-plate-bg);
+  padding:var(--logo-plate-pad);
+  border-radius:var(--logo-plate-radius);
+}
+.logo-plate.lg{padding:calc(var(--logo-plate-pad)*6); border-radius:calc(var(--logo-plate-radius)*3.6)}
+.logo-plate.sm{padding:calc(var(--logo-plate-pad)*3); border-radius:calc(var(--logo-plate-radius)*2)}
+
+/* 品牌標（每頁左上；logo: none 時不輸出） */
+.logo{
+  position:absolute; top:24px; left:clamp(20px,6vw,40px);
+  display:flex; align-items:center; gap:8px;
+  font-weight:700; letter-spacing:.02em; font-size:14px; color:var(--text-secondary);
+}
+.logo svg{display:block}
+
+/* 頁碼（每頁右下，格式 04 / 08） */
+.pageno{
+  position:absolute; bottom:22px; right:clamp(20px,6vw,40px);
+  font-size:14px; color:var(--text-muted);
+  font-variant-numeric:tabular-nums; letter-spacing:.14em;
+}
+
+/* ── ③ 標題與文字階層 ──────────────────────────────────── */
+.eyebrow{
+  display:inline-flex; align-items:center; gap:9px;
+  font-size:16px; font-weight:700; letter-spacing:.18em;
+  color:var(--text-muted); text-transform:uppercase; margin-bottom:14px;
+}
+.eyebrow .dot{width:6px; height:6px; border-radius:50%; background:var(--accent)}
+
+h1{
+  font-size:clamp(30px,5vw,58px); font-weight:700; line-height:1.25;
+  letter-spacing:.01em; text-wrap:balance;
+}
+h2{
+  font-size:clamp(22px,3.4vw,38px); font-weight:700; line-height:1.3;
+  letter-spacing:.01em; margin-bottom:8px; text-wrap:balance;
+}
+
+.subtitle{font-size:clamp(14px,2vw,19px); font-weight:600; color:var(--text-secondary); margin-top:16px}
+.meta{
+  color:var(--text-muted); margin-top:22px;
+  font-size:14px; letter-spacing:.14em;
+}
+.meta .sep{opacity:.4}
+
+.lede{color:var(--text-secondary); font-size:clamp(19px,2.2vw,22px); max-width:40em}
+.quote{font-size:clamp(15px,1.9vw,20px); font-weight:600; max-width:34em}
+.muted{color:var(--text-secondary)}
+.kicker{
+  font-size:16px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--accent-ink); margin-bottom:8px;
+}
+
+/* 備註（唯一允許 <14px 的地方）：`.md` 寫 `* 文字` 或 `ps. 文字`。
+   左側色條＋「※」前綴＋更小更淡的字級，讓它一眼就是附註而非內文，
+   兩個主題都靠既有 token（--text-muted／--border-light）分層，不新增顏色。 */
+.note{
+  margin-top:14px; padding-left:14px;
+  border-left:2px solid var(--border-light);
+  font-size:12px; line-height:1.6; color:var(--text-muted);
+}
+.note::before{content:"※ "}
+
+/* 數字 count-up（見 deck.js 的 data-countup） */
+[data-countup]{
+  display:inline-block; min-width:2.1ch; text-align:center;
+  font-variant-numeric:tabular-nums; color:var(--accent-ink);
+}
+
+/* 行內程式碼／檔名。用 max() 保底：字級隨父層等比縮放，但絕不掉到 14px 以下。 */
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:max(14px,.88em); background:var(--surface-2); color:var(--text-primary);
+  border:1px solid var(--border); padding:1px 6px; border-radius:5px;
+}
+
+/* ── ④ 版面語彙：卡片 / 網格 / 標籤 / 驗收框 ─────────────── */
+.grid{display:grid; gap:10px}
+.grid.cols-2{grid-template-columns:repeat(2,1fr)}
+.grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.grid.cols-4{grid-template-columns:repeat(4,1fr)}
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-top:var(--card-accent-width) solid var(--accent);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:20px 22px;
+}
+.card.tight{padding:14px 18px}
+.card b{font-size:19px; font-weight:600; color:var(--text-primary)}
+.card .muted{font-size:18px}
+/* 3～4 欄的窄卡：標題獨立成行 */
+.grid.cols-3 .card b,
+.grid.cols-4 .card b{display:block; margin-bottom:6px; font-size:19px; font-weight:700}
+.grid.cols-3 .card .muted,
+.grid.cols-4 .card .muted{font-size:18px}
+/* 卡片內的子清單（例：團隊卡片列出成員、產品/專案面卡片列出議題名稱）。
+   之前每份簡報各自寫 inline style，現在收成正式規則，往後自動一致。 */
+.card ul{list-style:disc; margin:10px 0 0; padding-left:1.25em; font-size:18px; color:var(--text-secondary)}
+
+.pill{
+  display:inline-block; padding:5px 14px; border-radius:999px;
+  font-size:16px; font-weight:600; white-space:nowrap;
+  background:var(--surface-2); border:1px solid var(--border); color:var(--text-secondary);
+}
+.pills{display:flex; gap:8px; flex-wrap:wrap; margin-top:20px}
+
+/* 優先級徽章（P0／P1／P2）：三色沿用色票既有 token（coral／yellow／green），
+   不新增顏色。深色主題用 --prio-tint 疊出膠囊底；淺色主題 --prio-tint 為
+   0%，底色等於純白 --surface，改以「同色邊框＋同色文字」分辨三級——因為
+   淺色的 -ink 系列只保證「on #FFFFFF」達 4.5:1，疊色只會把底色往下拉，讓
+   對比不夠（實測數字見 docs/briefing-spec.md §三）。
+   用法：
+     頁層級 —— <h2>標題<span class="prio p0">P0</span></h2>（標題文字與徽章
+       之間用 &nbsp; 相連，避免標題換行時把徽章單獨留在下一行）
+     行層級 —— <li><span class="prio p0">P0</span>項目文字</li> */
+.prio{
+  display:inline-flex; align-items:center; vertical-align:middle;
+  margin:0 .5em .2em .45em; padding:2px 10px; border-radius:999px;
+  font-size:16px; font-weight:700; letter-spacing:.02em; line-height:1.5;
+  white-space:nowrap; border:1px solid currentColor;
+}
+.prio:first-child{margin-left:0}
+.prio.p0{ color:var(--coral-ink,var(--coral)); background:color-mix(in srgb, var(--coral) var(--prio-tint,16%), var(--surface)); }
+.prio.p1{ color:var(--yellow-ink,var(--yellow)); background:color-mix(in srgb, var(--yellow) var(--prio-tint,16%), var(--surface)); }
+.prio.p2{ color:var(--green-ink,var(--green)); background:color-mix(in srgb, var(--green) var(--prio-tint,16%), var(--surface)); }
+
+/* 驗收 / 交付 callout */
+.verdict{
+  margin-top:16px; background:var(--surface); border:1px dashed var(--accent-dim);
+  border-radius:var(--radius); padding:10px 16px; font-size:18px;
+  color:var(--text-secondary);
+}
+.verdict b{
+  margin-right:.6em; color:var(--accent-ink); font-weight:700;
+  font-size:18px; letter-spacing:.14em; text-transform:uppercase;
+}
+
+/* 表格 */
+.table-wrap{overflow-x:auto; margin-top:16px}
+table{
+  border-collapse:collapse; width:100%;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); font-size:18px;
+}
+th{
+  background:var(--surface-2); text-align:left;
+  font-size:16px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--text-muted); padding:10px 16px;
+}
+td{padding:10px 16px; border-top:1px solid var(--border); vertical-align:top; color:var(--text-secondary)}
+td.num{white-space:nowrap; font-variant-numeric:tabular-nums}
+
+/* 重點摘要清單。`### 重點` 等一般標題維持 .highlights（用當頁 --accent／
+   --accent-ink，行為不變）；三個語意變體疊加在 .highlights 之上：
+     ### 現況     → .highlights.now    （藍：現況陳述、事實）
+     ### 問題     → .highlights.issue  （珊瑚紅：問題點）
+     ### 改善方向 → .highlights.fix    （綠：解法、行動）
+   h3 文字色淺色主題一律用 -ink 版本（深色主題沒有 -ink token，自動 fallback
+   回本色）；圓點與左側色條可用本色（非文字，不受 4.5:1 文字對比規則約束）。 */
+.highlights{margin-top:14px}
+.highlights h3{
+  font-size:20px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--text-muted); margin-bottom:14px; padding-left:10px;
+  border-left:3px solid var(--border-light);
+}
+.highlights.now h3{color:var(--blue-ink,var(--blue)); border-left-color:var(--blue)}
+.highlights.issue h3{color:var(--coral-ink,var(--coral)); border-left-color:var(--coral)}
+.highlights.fix h3{color:var(--green-ink,var(--green)); border-left-color:var(--green)}
+.highlights ul{list-style:none; display:grid; gap:6px}
+.highlights li{position:relative; padding-left:1.4em; font-size:18px; color:var(--text-secondary)}
+.highlights li::before{
+  content:""; position:absolute; left:0; top:.62em;
+  width:5px; height:5px; border-radius:50%; background:var(--accent);
+}
+.highlights.now li::before{background:var(--blue)}
+.highlights.issue li::before{background:var(--coral)}
+.highlights.fix li::before{background:var(--green)}
+
+/* 巢狀子項（清單項目底下再縮排一層的細項）。原本每份簡報各自寫
+   inline style，現在收成正式規則：字級跟內文一樣 14px、圓點縮小且改中性色
+   （不管外層是哪個語意變體，子項一律不搶色），縮排沿用原本的手感。
+   下面刻意把三個變體的巢狀選擇器也列出來，只為了贏過
+   `.highlights.now li::before` 等變體規則的 CSS 特異度（class 數相同時比
+   元素數），否則巢狀圓點會被外層變體色蓋掉。 */
+.highlights ul ul{list-style:none; display:grid; gap:6px; margin-top:6px; padding-left:1.15em}
+.highlights ul ul li{font-size:16px}
+.highlights ul ul li::before,
+.highlights.now ul ul li::before,
+.highlights.issue ul ul li::before,
+.highlights.fix ul ul li::before{width:4px; height:4px; background:var(--text-secondary)}
+
+/* ── ⑤ 圖解：流程 / 時間軸（逐項浮現） ──────────────────── */
+.flow{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:18px}
+.flow .node{
+  padding:11px 22px; border-radius:999px; font-size:18px; font-weight:600;
+  background:var(--surface-2); border:1px solid var(--border); color:var(--text-primary);
+}
+.flow .arrow{color:var(--text-muted); font-size:15px; line-height:1}
+
+.timeline{display:grid; gap:20px; margin-top:22px; grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.timeline .tl-item{position:relative; padding-top:24px}
+.timeline .tl-item::before{
+  content:""; position:absolute; left:0; top:7px; width:100%; height:2px;
+  background:var(--border);
+}
+.timeline .tl-item::after{
+  content:""; position:absolute; left:0; top:2px;
+  width:12px; height:12px; border-radius:50%; background:var(--accent);
+}
+.timeline .tl-label{font-size:19px; font-weight:700; margin-bottom:8px; color:var(--text-primary)}
+.timeline ul{list-style:none; display:grid; gap:5px}
+.timeline li{font-size:16px; color:var(--text-secondary)}
+
+/* ── ⑥ 互動 2：目錄側欄（toc） ─────────────────────────── */
+.toc{
+  position:fixed; right:18px; top:50%; transform:translateY(-50%); z-index:50;
+  display:flex; flex-direction:column; gap:11px; align-items:flex-end;
+}
+.toc a{
+  display:flex; align-items:center; gap:9px; justify-content:flex-end;
+  text-decoration:none; color:var(--text-secondary); font-size:14px; font-weight:600;
+  /* max-width 從 12em 收到 10em：字級從 12px 升到 14px 後，10em 的實際像素寬
+     （140px）跟舊版 12em×12px（144px）幾乎相同，讓標籤展開時不會比以前更
+     往內容區域擠——字級不降，靠這個換算補償。 */
+  max-width:10em; text-align:right; line-height:1.35;
+}
+.toc a .tick{
+  width:7px; height:7px; border-radius:50%; flex-shrink:0;
+  background:var(--border-light); transition:background .25s ease,transform .25s ease;
+}
+/* 標籤只在滑過目錄時出現：常駐會壓到頁面右側的內容（表格、卡片）。
+   出現時帶一層底色片，蓋在內容上仍讀得清楚。 */
+.toc a .label{
+  opacity:0; transform:translateX(6px); pointer-events:none;
+  background:var(--surface-2); border:1px solid var(--border);
+  padding:3px 9px; border-radius:7px;
+  transition:opacity .25s ease,transform .25s ease;
+}
+.toc:hover a .label{opacity:1; transform:none}
+.toc a[aria-current="true"]{color:var(--text-primary)}
+.toc a[aria-current="true"] .tick{background:var(--accent); transform:scale(1.4)}
+
+/* ── ⑦ 互動 3：可折疊段落（collapsible） ───────────────── */
+details.collapsible{
+  margin-top:16px; background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); box-shadow:var(--shadow); padding:0 20px;
+}
+details.collapsible[open]{border-color:var(--accent-dim)}
+details.collapsible > summary{
+  cursor:pointer; list-style:none; padding:14px 0;
+  font-weight:600; font-size:14px; color:var(--text-primary);
+  display:flex; align-items:center; gap:10px; user-select:none;
+}
+details.collapsible > summary::-webkit-details-marker{display:none}
+details.collapsible > summary::before{
+  content:"\25B8";                      /* ▸ */
+  color:var(--accent-ink); font-size:1em;
+  transition:transform .2s ease; display:inline-block;
+}
+details.collapsible[open] > summary::before{transform:rotate(90deg)}   /* ▾ */
+details.collapsible > summary:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:6px}
+details.collapsible > .body{
+  padding:14px 0 16px 1.5em; font-size:14px; color:var(--text-secondary);
+  border-top:1px solid var(--border);
+}
+
+/* ── ⑧ 動態：逐項浮現（.seq → .inview .step） ──────────────
+   漸進增強：隱藏 .step 的規則掛在 html.js 之下，而 .js 是由 deck.js
+   自己加上的。JS 沒載入 / 被停用 / 出錯時，所有內容維持可見，不會隱形。 */
+@media (prefers-reduced-motion:no-preference){
+  .slide > *{animation:rise .5s ease both}
+  @keyframes rise{from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:none}}
+  .js .seq .step{opacity:0; transform:translateY(10px); transition:opacity .5s ease,transform .5s ease}
+  .js .seq.inview .step{opacity:1; transform:none}
+}
+
+/* ── ⑨ 響應式（≤760px 單欄） ───────────────────────────── */
+@media (max-width:760px){
+  .grid{grid-template-columns:1fr !important}
+  .toc a{max-width:none; position:relative}
+  .toc a .label{display:none}
+  /* 觸控熱區：標籤隱藏後 .toc a 只剩 7×7px 的圓點，遠低於 WCAG 24×24px
+     下限。用一個看不見的 ::after（無背景、無邊框）把可點擊範圍撐到
+     28×28px，並用 position:absolute + translate(-50%,-50%) 讓它以圓點的
+     中心點為圓心向外擴張——圓點本身的大小、間距、位置完全不變，只是點擊
+     判定範圍變大（相鄰兩點的熱區可能因此重疊，這是預期的取捨）。 */
+  .toc a::after{
+    content:"";
+    position:absolute; top:50%; left:50%;
+    width:28px; height:28px;
+    transform:translate(-50%,-50%);
+  }
+}
+
+/* ── ⑩ 列印 / 匯出 PDF ─────────────────────────────────── */
+@media print{
+  html{scroll-snap-type:none}
+  body{background:#fff; color:#111}
+  .toc{display:none}
+  section.slide{min-height:auto; page-break-after:always}
+  .slide > *{animation:none !important}          /* 否則列印時可能停在動畫起始的透明狀態 */
+  .seq .step{opacity:1 !important; transform:none !important}
+  details.collapsible{break-inside:avoid}
+  details.collapsible > .body{display:block !important}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ 目錄（toc，自動由各頁標題生成） ═══════════ -->
+<nav class="toc" aria-label="章節導覽">
+  <a href="#sec-1"><span class="label">封面</span><span class="tick"></span></a>
+  <a href="#sec-2"><span class="label">這套系統做什麼</span><span class="tick"></span></a>
+  <a href="#sec-3"><span class="label">四個互動</span><span class="tick"></span></a>
+  <a href="#sec-4"><span class="label">設計系統</span><span class="tick"></span></a>
+  <a href="#sec-5"><span class="label">從 Markdown 到 HTML</span><span class="tick"></span></a>
+  <a href="#sec-6"><span class="label">目前狀態</span><span class="tick"></span></a>
+  <a href="#sec-7"><span class="label">結尾</span><span class="tick"></span></a>
+</nav>
+
+<!-- ═══════════ 01 封面（cover） ═══════════ -->
+<section class="slide cover" id="sec-1">
+  
+  
+  <h1>一份 Markdown，<span data-countup="16">1</span> 種版面區塊</h1>
+  <p class="subtitle">MDbriefing 互動簡報系統</p>
+  <p class="meta">Anton <span class="sep">·</span> 2026-08-04 <span class="sep">·</span> 規格示範版</p>
+  <div class="pageno">01 / 07</div>
+</section>
+
+<!-- ═══════════ 02 這套系統做什麼 ═══════════ -->
+<section class="slide" id="sec-2" style="--accent:var(--gold,var(--accent-default));--accent-ink:var(--gold-ink,var(--gold,var(--accent-ink-default)))">
+  
+  <div class="eyebrow"><span class="dot"></span>定位</div>
+  <h2>這套系統做什麼</h2>
+  <p class="lede">跟 AI 把一個主題聊清楚，整理成一份 Markdown，就得到一份能翻頁的互動 HTML 簡報。</p>
+  <p style="margin-top:16px;max-width:44em">需求方收到的是<b>一個 <code>.html</code> 檔</b>：雙擊就開、不需網路、不需伺服器。你手上留的是一份純文字 <code>.md</code>，改字、改順序都在文字檔裡做。</p>
+  <div class="grid cols-4 seq" style="margin-top:26px">
+    <div class="card step" style="--accent:var(--gold,var(--accent-default));--accent-ink:var(--gold-ink,var(--gold,var(--accent-ink-default)))">
+      <b>講清楚</b><span class="muted">跟 AI 討論主題、章節與重點，決定這份簡報要說服誰、說什麼。</span>
+    </div>
+    <div class="card step" style="--accent:var(--blue,var(--accent-default));--accent-ink:var(--blue-ink,var(--blue,var(--accent-ink-default)));transition-delay:.6s">
+      <b>填範本</b><span class="muted">複製 <code>templates/briefing-template.md</code>，把結論照提示填進 <code>content/</code>。</span>
+    </div>
+    <div class="card step" style="--accent:var(--green,var(--accent-default));--accent-ink:var(--green-ink,var(--green,var(--accent-ink-default)));transition-delay:1.2s">
+      <b>轉 HTML</b><span class="muted">照規格書的對照表產出 <code>briefings/&lt;主題&gt;/index.html</code>。</span>
+    </div>
+    <div class="card step" style="--accent:var(--gold,var(--accent-default));--accent-ink:var(--gold-ink,var(--gold,var(--accent-ink-default)));transition-delay:1.8s">
+      <b>交付</b><span class="muted">單檔傳給需求方，或直接在會議上開著簡報。</span>
+    </div>
+  </div>
+  <div class="verdict"><b>驗收</b>需求方在自己的電腦上雙擊就能看完整份簡報，不需要你在旁邊協助。</div>
+  <div class="pageno">02 / 07</div>
+</section>
+
+<!-- ═══════════ 03 四個互動 ═══════════ -->
+<section class="slide" id="sec-3" style="--accent:var(--blue,var(--accent-default));--accent-ink:var(--blue-ink,var(--blue,var(--accent-ink-default)))">
+  
+  <div class="eyebrow"><span class="dot"></span>操作方式</div>
+  <h2>四個互動</h2>
+  <p class="lede">翻頁、目錄跳轉、可折疊、逐項浮現——沒有多餘的按鈕，版面留給內容。</p>
+  <div class="grid cols-4 seq" style="margin-top:26px">
+    <div class="card step" style="--accent:var(--blue,var(--accent-default));--accent-ink:var(--blue-ink,var(--blue,var(--accent-ink-default)))">
+      <b>翻頁</b><span class="muted">滾輪自動吸附；方向鍵 → ↓ 下一頁、← ↑ 上一頁；空白處單擊左鍵也是下一頁。</span>
+    </div>
+    <div class="card step" style="--accent:var(--green,var(--accent-default));--accent-ink:var(--green-ink,var(--green,var(--accent-ink-default)));transition-delay:.6s">
+      <b>目錄跳轉</b><span class="muted">右側那排小圓點就是目錄，滑過展開標題、點擊跳頁，目前這頁會亮起。</span>
+    </div>
+    <div class="card step" style="--accent:var(--gold,var(--accent-default));--accent-ink:var(--gold-ink,var(--gold,var(--accent-ink-default)));transition-delay:1.2s">
+      <b>可折疊</b><span class="muted">細節收在可點開的標題列裡，讓主畫面只留結論。</span>
+    </div>
+    <div class="card step" style="--accent:var(--blue,var(--accent-default));--accent-ink:var(--blue-ink,var(--blue,var(--accent-ink-default)));transition-delay:1.8s">
+      <b>逐項浮現</b><span class="muted">卡片、流程、時間軸在進入畫面時依序淡入，講到哪、出現到哪。</span>
+    </div>
+  </div>
+  <details class="collapsible">
+    <summary>為什麼不做「上一頁 / 下一頁」按鈕</summary>
+    <div class="body">
+      <p>按鈕會長期佔住畫面底部，而它能做的事鍵盤與點擊都能做。所以規格上直接不放按鈕：版面優先，操作靠鍵盤與單擊。</p>
+      <p style="margin-top:10px">例外情況也一併定義好了——點在連結、可折疊標題、目錄或正在選字時，單擊不會翻頁，不會誤觸。</p>
+    </div>
+  </details>
+  <div class="pageno">03 / 07</div>
+</section>
+
+<!-- ═══════════ 04 設計系統 ═══════════ -->
+<section class="slide" id="sec-4" style="--accent:var(--green,var(--accent-default));--accent-ink:var(--green-ink,var(--green,var(--accent-ink-default)))">
+  
+  <div class="eyebrow"><span class="dot"></span>視覺可換</div>
+  <h2>設計系統</h2>
+  <p style="margin-top:8px;max-width:44em">形態固定、視覺可換。版面規則寫在 <code>assets/deck.css</code>，只引用變數、不寫死顏色；<b>底色與標誌是兩個獨立的槽</b>，依觀眾各自決定。</p>
+  <div class="pills">
+    <span class="pill">近黑底 #0d0f14</span>
+    <span class="pill">淺灰字 #e4e8f2</span>
+    <span class="pill">金色重點 #d4a843</span>
+    <span class="pill">卡片 #161920</span>
+    <span class="pill">圓角 10px</span>
+    <span class="pill">微軟正黑體</span>
+  </div>
+  <div class="highlights">
+    <h3>重點</h3>
+    <ul>
+      <li>一頁一螢幕：<code>min-height:100vh</code> + 滾動吸附，不是捲動式長文件。</li>
+      <li>底色換一行：<code>theme: dark</code>（預設近黑）或 <code>theme: light</code>（米白）。</li>
+      <li>標誌換一行：<code>logo: none</code>（預設不掛）或 <code>logo: tomoaid</code>；黑底會自動為原色標誌加一層淺色底片，<b>標誌本身不改色</b>。</li>
+      <li>每頁選一個重點色，眉標圓點、卡片上緣、清單符號、時間軸圓點都跟著它變。</li>
+      <li>≤760px 自動降為單欄，手機上也讀得完。</li>
+    </ul>
+  </div>
+  <div class="pageno">04 / 07</div>
+</section>
+
+<!-- ═══════════ 05 從 Markdown 到 HTML ═══════════ -->
+<section class="slide" id="sec-5" style="--accent:var(--blue,var(--accent-default));--accent-ink:var(--blue-ink,var(--blue,var(--accent-ink-default)))">
+  
+  <div class="eyebrow"><span class="dot"></span>流程</div>
+  <h2>從 Markdown 到 HTML</h2>
+  <p class="lede">每個 Markdown 寫法對應哪段 HTML，規格書第六節有一張逐條對照表。</p>
+  <div class="flow seq">
+    <div class="node step">填 content/*.md</div>
+    <div class="arrow step" style="transition-delay:.5s" aria-hidden="true">→</div>
+    <div class="node step" style="transition-delay:1s">照對照表轉換</div>
+    <div class="arrow step" style="transition-delay:1.5s" aria-hidden="true">→</div>
+    <div class="node step" style="transition-delay:2s">內嵌 assets/</div>
+    <div class="arrow step" style="transition-delay:2.5s" aria-hidden="true">→</div>
+    <div class="node step" style="transition-delay:3s">產出單檔 index.html</div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <tbody>
+        <tr><th>你在 .md 寫的</th><th>產出的 HTML</th><th>看起來是</th></tr>
+        <tr><td class="num"><code>眉標：定位</code></td><td class="num"><code>&lt;div class="eyebrow"&gt;</code></td><td>標題上方的小標籤</td></tr>
+        <tr><td class="num"><code>- **標題** 說明</code></td><td class="num"><code>&lt;div class="card step"&gt;</code></td><td>一張重點色上緣的卡片</td></tr>
+        <tr><td class="num"><code>### 驗收</code></td><td class="num"><code>&lt;div class="verdict"&gt;</code></td><td>重點色虛線框</td></tr>
+        <tr><td class="num"><code>::: 可折疊 標題</code></td><td class="num"><code>&lt;details class="collapsible"&gt;</code></td><td>可點開的標題列</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="verdict"><b>交付</b><code>assets/</code> 是樣式與互動的真理來源，但產出時整段內嵌進 <code>.html</code>——共用一套設計系統，同時保住「單檔可交付」。</div>
+  <div class="pageno">05 / 07</div>
+</section>
+
+<!-- ═══════════ 06 目前狀態 ═══════════ -->
+<section class="slide" id="sec-6" style="--accent:var(--green,var(--accent-default));--accent-ink:var(--green-ink,var(--green,var(--accent-ink-default)))">
+  
+  <div class="eyebrow"><span class="dot"></span>進度</div>
+  <h2>目前狀態</h2>
+  <div class="timeline seq">
+    <div class="tl-item step" style="--accent:var(--green,var(--accent-default))">
+      <div class="tl-label">已完成</div>
+      <ul>
+        <li>設計系統 assets/deck.css、deck.js</li>
+        <li>主題槽 assets/themes/（黑底 / 白底）＋ 標誌槽 assets/logos/</li>
+        <li>規格書 docs/briefing-spec.md</li>
+        <li>空白範本與本份 golden 對照組</li>
+      </ul>
+    </div>
+    <div class="tl-item step" style="--accent:var(--blue,var(--accent-default));transition-delay:.8s">
+      <div class="tl-label">下一步</div>
+      <ul>
+        <li>MD→HTML 自動轉換腳本</li>
+        <li>更多主題與客戶標誌</li>
+      </ul>
+    </div>
+    <div class="tl-item step" style="--accent:var(--gold,var(--accent-default));transition-delay:1.6s">
+      <div class="tl-label">之後</div>
+      <ul>
+        <li>上線部署（GitHub Pages）</li>
+        <li>資料視覺化區塊</li>
+      </ul>
+    </div>
+  </div>
+  <div class="verdict"><b>驗收</b>本份 <code>index.html</code> 與 <code>content/demo.md</code> 逐區塊對得上，且四個互動在瀏覽器實測皆可用。</div>
+  <div class="pageno">06 / 07</div>
+</section>
+
+<!-- ═══════════ 07 結尾（closing） ═══════════ -->
+<section class="slide closing" id="sec-7" style="--accent:var(--gold,var(--accent-default));--accent-ink:var(--gold-ink,var(--gold,var(--accent-ink-default)))">
+  
+  <div class="eyebrow"><span class="dot"></span>下一步</div>
+  <h2>結尾</h2>
+  <p style="margin-top:8px;max-width:44em">規格、樣式、範本、golden 對照組都到位了。下一份簡報從複製範本開始，不用再想版面。</p>
+  <div class="highlights">
+    <h3>重點</h3>
+    <ul>
+      <li>開新簡報：複製 <code>templates/briefing-template.md</code> 到 <code>content/你的主題.md</code></li>
+      <li>看規格：<code>docs/briefing-spec.md</code></li>
+      <li>看實作：本檔對應的 <code>briefings/demo/index.html</code></li>
+    </ul>
+  </div>
+  <p class="quote" style="text-align:center;margin:26px auto 0">「內容用講的，版面交給規格。」</p>
+  
+  <div class="pageno">07 / 07</div>
+</section>
+
+<script>
+/* ══════════════ 內嵌：assets/deck.js ══════════════ */
+/* ============================================================
+   MDbriefing — deck.js
+   簡報共用互動（真理來源）
+
+   基準：_PM/resource/PM 主管 90 天目標計劃_files/saved_resource.html
+   用法：產出 briefings/主題/index.html 時，把本檔內容整段內嵌進 HTML body
+        結尾前的 script 區塊（單檔自包含、零外部資源）。
+   注意：本檔的註解與內容都不可出現字面上的「結束 script 標籤」字串，
+        否則內嵌後會提前關閉腳本區塊，互動會整組失效。
+   規格：docs/briefing-spec.md
+
+   本檔負責四件事：
+     ① 逐項浮現   .seq 進入視窗 → 加 .inview，讓 .step 依 transition-delay 依序浮現
+     ② 目錄跳轉   .toc 的連結點擊跳頁 + 目前所在頁高亮（aria-current）
+     ③ 數字增長   [data-countup] 從起始值數到目標值
+     ④ 翻頁       ← ↑ 上一頁／→ ↓ 下一頁／滑鼠左鍵單擊 下一頁
+                  （滾動吸附翻頁由 CSS scroll-snap 負責；可折疊由原生 details 元素負責）
+   ============================================================ */
+(function () {
+  'use strict';
+
+  // 漸進增強開關：只有 JS 真的跑起來，deck.css 才會啟用「先隱藏、逐項浮現」。
+  // 沒這一行，JS 停用或出錯時 .step 會永久隱形。務必放在最前面。
+  document.documentElement.classList.add('js');
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var scrollBehavior = reduceMotion ? 'auto' : 'smooth';
+  var slides = Array.prototype.slice.call(document.querySelectorAll('section.slide'));
+
+  /* ── ① 逐項浮現 ─────────────────────────────────────── */
+  var seqNodes = Array.prototype.slice.call(document.querySelectorAll('.seq'));
+  if (seqNodes.length) {
+    if (reduceMotion || !('IntersectionObserver' in window)) {
+      seqNodes.forEach(function (el) { el.classList.add('inview'); });
+    } else {
+      var seqObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            e.target.classList.add('inview');
+            seqObserver.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.45 });
+      seqNodes.forEach(function (el) { seqObserver.observe(el); });
+
+      // 保險：載入時已在畫面內的 .seq，若 observer 尚未回呼就直接浮現。
+      // （避免列印、螢幕截圖、或 observer 延遲回呼時該區塊停在透明狀態。）
+      window.addEventListener('load', function () {
+        seqNodes.forEach(function (el) {
+          if (el.classList.contains('inview')) return;
+          var r = el.getBoundingClientRect();
+          if (r.bottom > 0 && r.top < (window.innerHeight || 0)) {
+            el.classList.add('inview');
+            seqObserver.unobserve(el);
+          }
+        });
+      });
+    }
+  }
+
+  /* ── ④-a 翻頁核心：目前是第幾頁 / 跳到第幾頁 ──────────── */
+  // 程式性捲動進行中時，以「目標頁」為準，避免連按時 index 抓到捲動中間值
+  var pendingIndex = null;
+  var pendingTimer = null;
+
+  function currentIndex() {
+    if (pendingIndex !== null) return pendingIndex;
+    var best = 0, bestDist = Infinity;
+    for (var i = 0; i < slides.length; i++) {
+      var dist = Math.abs(slides[i].getBoundingClientRect().top);
+      if (dist < bestDist) { bestDist = dist; best = i; }
+    }
+    return best;
+  }
+
+  function goTo(index) {
+    if (!slides.length) return;
+    var i = Math.max(0, Math.min(slides.length - 1, index));
+    pendingIndex = i;
+    clearTimeout(pendingTimer);
+    pendingTimer = setTimeout(function () { pendingIndex = null; }, 700);
+    slides[i].scrollIntoView({ behavior: scrollBehavior, block: 'start' });
+  }
+
+  function next() { goTo(currentIndex() + 1); }
+  function prev() { goTo(currentIndex() - 1); }
+
+  /* ── ④-b 鍵盤：← ↑ 上一頁／→ ↓ 下一頁 ────────────────── */
+  document.addEventListener('keydown', function (ev) {
+    if (ev.defaultPrevented) return;
+    if (ev.metaKey || ev.ctrlKey || ev.altKey || ev.shiftKey) return;
+
+    // 焦點在輸入元件或已展開的 summary 上時不攔（讓原生行為優先）
+    var el = document.activeElement;
+    if (el && el.closest && el.closest('input,textarea,select,[contenteditable="true"]')) return;
+
+    switch (ev.key) {
+      case 'ArrowRight':
+      case 'ArrowDown':
+        ev.preventDefault(); next(); break;
+      case 'ArrowLeft':
+      case 'ArrowUp':
+        ev.preventDefault(); prev(); break;
+      case 'Home':
+        ev.preventDefault(); goTo(0); break;
+      case 'End':
+        ev.preventDefault(); goTo(slides.length - 1); break;
+    }
+  });
+
+  /* ── ④-c 滑鼠左鍵單擊 → 下一頁 ──────────────────────── */
+  // 不攔的情況：非左鍵、有修飾鍵、點在可互動元素上（連結／按鈕／可折疊標題／目錄／
+  // 表單）、點在標了 .no-advance 的區域內、或使用者正在選取文字。
+  var INTERACTIVE = 'a,button,summary,details,input,textarea,select,label,[role="button"],.toc,.no-advance';
+
+  document.addEventListener('click', function (ev) {
+    if (ev.button !== 0) return;
+    if (ev.detail !== 1) return;                       // 只認單擊，雙擊/三擊不翻頁
+    if (ev.metaKey || ev.ctrlKey || ev.altKey || ev.shiftKey) return;
+    if (ev.defaultPrevented) return;
+
+    var t = ev.target;
+    if (t && t.closest && t.closest(INTERACTIVE)) return;
+
+    var sel = window.getSelection && window.getSelection();
+    if (sel && !sel.isCollapsed && String(sel).length) return;   // 正在選字
+
+    next();
+  });
+
+  /* ── ② 目錄：點擊跳轉 + 目前章節高亮 ─────────────────── */
+  var tocLinks = Array.prototype.slice.call(document.querySelectorAll('.toc a[href^="#"]'));
+  if (tocLinks.length) {
+    tocLinks.forEach(function (a) {
+      a.addEventListener('click', function (ev) {
+        var target = document.getElementById(a.getAttribute('href').slice(1));
+        if (!target) return;
+        ev.preventDefault();
+        goTo(slides.indexOf(target));
+      });
+    });
+
+    var setCurrent = function (id) {
+      tocLinks.forEach(function (a) {
+        if (a.getAttribute('href') === '#' + id) a.setAttribute('aria-current', 'true');
+        else a.removeAttribute('aria-current');
+      });
+    };
+
+    var idSlides = slides.filter(function (s) { return s.id; });
+    if (idSlides.length) {
+      if ('IntersectionObserver' in window) {
+        var visible = {};
+        var tocObserver = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) { visible[e.target.id] = e.intersectionRatio; });
+          var best = null, bestRatio = 0;
+          idSlides.forEach(function (s) {
+            var r = visible[s.id] || 0;
+            if (r > bestRatio) { bestRatio = r; best = s.id; }
+          });
+          if (best) setCurrent(best);
+        }, { threshold: [0.15, 0.4, 0.6, 0.85] });
+        idSlides.forEach(function (s) { tocObserver.observe(s); });
+      } else {
+        setCurrent(idSlides[0].id);
+      }
+    }
+  }
+
+  /* ── ③ 數字增長（封面大數字等） ─────────────────────── */
+  var counters = Array.prototype.slice.call(document.querySelectorAll('[data-countup]'));
+  counters.forEach(function (el) {
+    var target = parseInt(el.getAttribute('data-countup'), 10);
+    if (isNaN(target)) return;
+    if (reduceMotion) { el.textContent = String(target); return; }
+
+    var from = parseInt(el.getAttribute('data-countup-from') || '1', 10);
+    var duration = parseInt(el.getAttribute('data-countup-duration') || '3000', 10);
+    var easeOut = function (t) { return 1 - Math.pow(1 - t, 3); };
+    var t0;
+
+    el.textContent = String(from);
+    var tick = function (now) {
+      if (t0 === undefined) t0 = now;
+      var p = Math.min((now - t0) / duration, 1);
+      el.textContent = String(Math.round(from + (target - from) * easeOut(p)));
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+})();
+</script>
+</body>
+</html>

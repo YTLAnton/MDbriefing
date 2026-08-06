@@ -1,0 +1,507 @@
+/* ============================================================
+   MDbriefing — deck.css
+   簡報共用樣式（設計系統真理來源）
+
+   ⚠️ 對焦範圍只有「形態」：一頁一螢幕、滾動吸附、翻頁、目錄、可折疊、
+      逐項浮現。視覺**不跟任何外部簡報對焦**——本檔的預設值是本專案原有的
+      深色系（來源：briefings/AD_data_transfer_bot/ 與
+      briefings/Self-Media_Course_CardGame/ 兩份既有檔案的色票與造型）。
+
+   🎨 底色與標誌是兩個獨立的槽，依觀眾各自決定：
+        theme: dark(預設) | light        → assets/themes/ ，管配色與造型
+        logo : none(預設) | tomoaid | …  → assets/logos/  ，管標誌（官方原色，不改色）
+      本檔 §① 的每一個 token 都可被主題整組覆寫；以下所有規則只引用 token、
+      不寫死顏色，所以換主題不需要改這裡任何一行。
+
+   用法：產出 briefings/主題/index.html 時，把本檔內容整段內嵌進 HTML 的
+        style 區塊（保持單檔自包含、file:// 可直接開、零外部資源）。
+   注意：本檔的註解與內容都不可出現字面上的「結束 style 標籤」字串，
+        否則內嵌後會提前關閉樣式區塊，後半段樣式會被當文字印在頁面上。
+   規格：docs/briefing-spec.md
+   ============================================================ */
+
+/* ── ① 設計 token｜預設主題：專案深色系 ─────────────────────
+   主題包（assets/themes/*.html）就是重新宣告這一區的值。
+   換主題**必須**至少覆寫：三個表面色、三階文字色、--accent-default、
+   --accent-dim；其餘（造型、字族、重點色別名）可選擇性覆寫。 */
+:root{
+  /* 底色與表面 */
+  --bg:#0d0f14;
+  --surface:#161920;
+  --surface-2:#1e2230;
+  --border:#2a2f3f;
+  --border-light:#606c8a; /* ≥3:1 on --surface-2（目錄未選中圓點，非文字，WCAG 非文字對比門檻） */
+
+  /* 文字三階
+     ⚠️ 這三階是給**投影**用的，不是給近距離閱讀用的。觀眾隔著會議室看投影機
+     或電視，對比要遠高於桌面文件；本專案兩份既有報價文件的淡色次要文字
+     （--text-muted 曾是 #4a5268，僅 2.46:1）在投影下讀不出來。
+     現值（第二輪再提亮，因為第一輪的 muted ≥4.5:1／secondary ≥7:1 在投影機
+     上仍被形容為「灰」）：muted ≥7:1、secondary ≥11:1，且對 --bg／--surface／
+     --surface-2 三個底色皆達標（--surface-2 是 th／.pill／.flow .node 的底，
+     三者中最深，最吃虧，故以它為準）。
+     ⚠️ 提亮後 primary／secondary 兩階的 CIE L* 間距被壓縮到 Δ5.94（低於原本
+     Δ8 的分層基準），因為 secondary 已經逼近 primary 才能達到 11:1；細節與
+     取捨見 docs/briefing-spec.md §一。 */
+  --text-primary:#e4e8f2;
+  --text-secondary:#d4d7e1;
+  --text-muted:#a5adc0;
+
+  /* 重點色
+     --accent-default：這個主題的預設重點色（每頁沒指定「色」時用它）
+     --accent-dim    ：重點色的暗一階，用於虛線框、展開後的邊框
+     其餘是本主題提供的可選色名，作者在 .md 寫「色：blue」就是選這裡的名字。
+     可用色名由主題決定；寫了主題沒有的色名會自動退回 --accent-default。 */
+  --gold:#d4a843;
+  --blue:#5b8dee;
+  --green:#6fcf97;
+  /* 以下五個色名讓「為淺色主題寫的簡報」切到黑底時也不脫色。
+     同一個色名在不同主題有各自的值（深色主題一律提亮），這是雙主題
+     設計系統的常規做法；此處全部 ≥4.5:1 on 卡片底 #161920。 */
+  --yellow:#F9B233;
+  --purple:#A062E9;
+  --teal:#1ED9C6;
+  --coral:#F4695C;
+  --navy:#4EA6C7;
+  --accent-default:var(--gold);
+  --accent-ink-default:var(--accent-default);
+  --accent-dim:#a07c2e;
+  --accent:var(--accent-default);
+  /* --accent-ink：重點色「當文字用」的版本。深色主題上亮色字對比本來就夠，
+     所以預設等於 --accent；淺色主題必須覆寫成深一階，否則小字會看不清。 */
+  --accent-ink:var(--accent);
+
+  /* 優先級徽章（.prio）底色疊色比例。深色主題疊色明顯（膠囊感），淺色主題
+     疊色歸零——因為淺色的 -ink 系列色只保證「on #FFFFFF」達到 4.5:1，沒有
+     再疊色的餘裕（疊色會讓底色偏暗、對比往下掉），所以淺色改以「純白底＋
+     同色邊框＋同色文字」分辨三級，深色則用疊色膠囊。實測見
+     docs/briefing-spec.md §三。 */
+  --prio-tint:16%;
+
+  /* 造型 */
+  --radius:10px;
+  --radius-lg:14px;
+  --shadow:0 4px 20px rgba(0,0,0,.35);
+  --card-accent-width:2px;      /* 卡片上緣的重點色粗細 */
+  --font-stack:'Microsoft JhengHei','微軟正黑體','PingFang TC',system-ui,sans-serif;
+  --root-size:16px;
+
+  /* 標誌槽（由標誌包提供；預設不掛任何標誌） */
+  --brand-name:"";
+
+  /* 標誌底片（keyline plate）：深色底放彩色標誌時，用一層淺色底片讓標誌
+     回到它被設計的底色上——**標誌本身一個像素都不改**。
+     淺色主題把這三個值設為 transparent / 0 / 0，底片就自動消失。
+     單份簡報要強制關掉底片：在產出的 style 末尾覆寫這三個值即可。 */
+  --logo-plate-bg:#FAF8F5;
+  --logo-plate-pad:3px;
+  --logo-plate-radius:7px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+html{
+  font-size:var(--root-size);
+  scroll-snap-type:y proximity;   /* 互動 1：滾動吸附翻頁 */
+  scroll-behavior:smooth;         /* 互動 2：目錄跳轉時平滑捲動 */
+}
+
+body{
+  font-family:var(--font-stack);
+  background:var(--bg);
+  color:var(--text-primary);
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+
+img{max-width:100%}
+
+/* ── ② 頁（slide）骨架 ──────────────────────────────────── */
+section.slide{
+  min-height:100vh;
+  scroll-snap-align:start;
+  position:relative;
+  display:flex; flex-direction:column; justify-content:center;
+  padding:clamp(32px,5vh,56px) clamp(20px,6vw,76px);
+  overflow:hidden;
+}
+section.slide.cover{align-items:center; text-align:center}
+
+/* 章節封面頁（`.md` 單個 `#`）：章節之間的自然停頓點，沿用 .cover 的
+   垂直水平置中做法。標誌與頁碼維持一般頁的定位（左上／右下），不受置中影響。 */
+section.slide.divider{align-items:center; text-align:center}
+.slide.divider h1{font-size:clamp(32px,5vw,52px)}
+.divider-sub{font-size:clamp(16px,2vw,20px); color:var(--text-secondary); margin-top:18px}
+/* 提示行：左側色條吃當頁 --accent，字級 18px；區塊本身置中（沿用 flex
+   align-items:center 置中一個「內容決定寬度」的區塊），區塊內文字左靠，
+   讓色條貼齊文字左緣，而不是貼齊整頁置中軸。 */
+.divider-hint{
+  margin-top:28px; max-width:32em;
+  padding:10px 18px; border-left:3px solid var(--accent);
+  font-size:18px; line-height:1.6; color:var(--text-secondary);
+  text-align:left;
+}
+
+/* 標誌底片：三個尺寸共用同一組 token，淺色主題下自動歸零 */
+.logo-plate{
+  display:inline-flex; align-items:center; justify-content:center;
+  background:var(--logo-plate-bg);
+  padding:var(--logo-plate-pad);
+  border-radius:var(--logo-plate-radius);
+}
+.logo-plate.lg{padding:calc(var(--logo-plate-pad)*6); border-radius:calc(var(--logo-plate-radius)*3.6)}
+.logo-plate.sm{padding:calc(var(--logo-plate-pad)*3); border-radius:calc(var(--logo-plate-radius)*2)}
+
+/* 品牌標（每頁左上；logo: none 時不輸出） */
+.logo{
+  position:absolute; top:24px; left:clamp(20px,6vw,40px);
+  display:flex; align-items:center; gap:8px;
+  font-weight:700; letter-spacing:.02em; font-size:14px; color:var(--text-secondary);
+}
+.logo svg{display:block}
+
+/* 頁碼（每頁右下，格式 04 / 08） */
+.pageno{
+  position:absolute; bottom:22px; right:clamp(20px,6vw,40px);
+  font-size:14px; color:var(--text-muted);
+  font-variant-numeric:tabular-nums; letter-spacing:.14em;
+}
+
+/* ── ③ 標題與文字階層 ──────────────────────────────────── */
+.eyebrow{
+  display:inline-flex; align-items:center; gap:9px;
+  font-size:16px; font-weight:700; letter-spacing:.18em;
+  color:var(--text-muted); text-transform:uppercase; margin-bottom:14px;
+}
+.eyebrow .dot{width:6px; height:6px; border-radius:50%; background:var(--accent)}
+
+h1{
+  font-size:clamp(30px,5vw,58px); font-weight:700; line-height:1.25;
+  letter-spacing:.01em; text-wrap:balance;
+}
+h2{
+  font-size:clamp(22px,3.4vw,38px); font-weight:700; line-height:1.3;
+  letter-spacing:.01em; margin-bottom:8px; text-wrap:balance;
+}
+
+.subtitle{font-size:clamp(14px,2vw,19px); font-weight:600; color:var(--text-secondary); margin-top:16px}
+.meta{
+  color:var(--text-muted); margin-top:22px;
+  font-size:14px; letter-spacing:.14em;
+}
+.meta .sep{opacity:.4}
+
+.lede{color:var(--text-secondary); font-size:clamp(19px,2.2vw,22px); max-width:40em}
+.quote{font-size:clamp(15px,1.9vw,20px); font-weight:600; max-width:34em}
+.muted{color:var(--text-secondary)}
+.kicker{
+  font-size:16px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--accent-ink); margin-bottom:8px;
+}
+
+/* 備註（唯一允許 <14px 的地方）：`.md` 寫 `* 文字` 或 `ps. 文字`。
+   左側色條＋「※」前綴＋更小更淡的字級，讓它一眼就是附註而非內文，
+   兩個主題都靠既有 token（--text-muted／--border-light）分層，不新增顏色。 */
+.note{
+  margin-top:14px; padding-left:14px;
+  border-left:2px solid var(--border-light);
+  font-size:12px; line-height:1.6; color:var(--text-muted);
+}
+.note::before{content:"※ "}
+
+/* 數字 count-up（見 deck.js 的 data-countup） */
+[data-countup]{
+  display:inline-block; min-width:2.1ch; text-align:center;
+  font-variant-numeric:tabular-nums; color:var(--accent-ink);
+}
+
+/* 行內程式碼／檔名。用 max() 保底：字級隨父層等比縮放，但絕不掉到 14px 以下。 */
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:max(14px,.88em); background:var(--surface-2); color:var(--text-primary);
+  border:1px solid var(--border); padding:1px 6px; border-radius:5px;
+}
+
+/* ── ④ 版面語彙：卡片 / 網格 / 標籤 / 驗收框 ─────────────── */
+.grid{display:grid; gap:10px}
+.grid.cols-2{grid-template-columns:repeat(2,1fr)}
+.grid.cols-3{grid-template-columns:repeat(3,1fr)}
+.grid.cols-4{grid-template-columns:repeat(4,1fr)}
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-top:var(--card-accent-width) solid var(--accent);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:20px 22px;
+}
+.card.tight{padding:14px 18px}
+.card b{font-size:19px; font-weight:600; color:var(--text-primary)}
+.card .muted{font-size:18px}
+/* 3～4 欄的窄卡：標題獨立成行 */
+.grid.cols-3 .card b,
+.grid.cols-4 .card b{display:block; margin-bottom:6px; font-size:19px; font-weight:700}
+.grid.cols-3 .card .muted,
+.grid.cols-4 .card .muted{font-size:18px}
+/* 卡片內的子清單（例：團隊卡片列出成員、產品/專案面卡片列出議題名稱）。
+   之前每份簡報各自寫 inline style，現在收成正式規則，往後自動一致。 */
+.card ul{list-style:disc; margin:10px 0 0; padding-left:1.25em; font-size:18px; color:var(--text-secondary)}
+
+.pill{
+  display:inline-block; padding:5px 14px; border-radius:999px;
+  font-size:16px; font-weight:600; white-space:nowrap;
+  background:var(--surface-2); border:1px solid var(--border); color:var(--text-secondary);
+}
+.pills{display:flex; gap:8px; flex-wrap:wrap; margin-top:20px}
+
+/* 優先級徽章（P0／P1／P2）：三色沿用色票既有 token（coral／yellow／green），
+   不新增顏色。深色主題用 --prio-tint 疊出膠囊底；淺色主題 --prio-tint 為
+   0%，底色等於純白 --surface，改以「同色邊框＋同色文字」分辨三級——因為
+   淺色的 -ink 系列只保證「on #FFFFFF」達 4.5:1，疊色只會把底色往下拉，讓
+   對比不夠（實測數字見 docs/briefing-spec.md §三）。
+   用法：
+     頁層級 —— <h2>標題<span class="prio p0">P0</span></h2>（標題文字與徽章
+       之間用 &nbsp; 相連，避免標題換行時把徽章單獨留在下一行）
+     行層級 —— <li><span class="prio p0">P0</span>項目文字</li> */
+.prio{
+  display:inline-flex; align-items:center; vertical-align:middle;
+  margin:0 .5em .2em .45em; padding:2px 10px; border-radius:999px;
+  font-size:16px; font-weight:700; letter-spacing:.02em; line-height:1.5;
+  white-space:nowrap; border:1px solid currentColor;
+}
+.prio:first-child{margin-left:0}
+.prio.p0{ color:var(--coral-ink,var(--coral)); background:color-mix(in srgb, var(--coral) var(--prio-tint,16%), var(--surface)); }
+.prio.p1{ color:var(--yellow-ink,var(--yellow)); background:color-mix(in srgb, var(--yellow) var(--prio-tint,16%), var(--surface)); }
+.prio.p2{ color:var(--green-ink,var(--green)); background:color-mix(in srgb, var(--green) var(--prio-tint,16%), var(--surface)); }
+
+/* 驗收 / 交付 callout */
+.verdict{
+  margin-top:16px; background:var(--surface); border:1px dashed var(--accent-dim);
+  border-radius:var(--radius); padding:10px 16px; font-size:18px;
+  color:var(--text-secondary);
+}
+/* 標籤固定用黃色（不隨當頁重點色 --accent 變動），比照 .prio.p1 的
+   fallback 寫法：深色主題沒有 --yellow-ink token，自動退回 --yellow
+   （on --surface #161920 ≈9.58:1）；淺色主題有 --yellow-ink（on #FFFFFF
+   ≈4.55:1），兩者皆 ≥4.5:1。虛線框顏色（--accent-dim）與背景不受影響。 */
+.verdict b{
+  margin-right:.6em; color:var(--yellow-ink,var(--yellow)); font-weight:700;
+  font-size:18px; letter-spacing:.14em; text-transform:uppercase;
+}
+
+/* 表格 */
+.table-wrap{overflow-x:auto; margin-top:16px}
+table{
+  border-collapse:collapse; width:100%;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); font-size:18px;
+}
+th{
+  background:var(--surface-2); text-align:left;
+  font-size:16px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--text-muted); padding:10px 16px;
+}
+td{padding:10px 16px; border-top:1px solid var(--border); vertical-align:top; color:var(--text-secondary)}
+td.num{white-space:nowrap; font-variant-numeric:tabular-nums}
+
+/* 重點摘要清單。`### 重點` 等一般標題維持 .highlights（用當頁 --accent／
+   --accent-ink，行為不變）；三個語意變體疊加在 .highlights 之上：
+     ### 現況     → .highlights.now    （藍：現況陳述、事實）
+     ### 問題     → .highlights.issue  （珊瑚紅：問題點）
+     ### 改善方向 → .highlights.fix    （綠：解法、行動）
+   h3 文字色淺色主題一律用 -ink 版本（深色主題沒有 -ink token，自動 fallback
+   回本色）；圓點與左側色條可用本色（非文字，不受 4.5:1 文字對比規則約束）。 */
+.highlights{margin-top:14px}
+.highlights h3{
+  font-size:20px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--text-muted); margin-bottom:14px; padding-left:10px;
+  border-left:3px solid var(--border-light);
+}
+.highlights.now h3{color:var(--blue-ink,var(--blue)); border-left-color:var(--blue)}
+.highlights.issue h3{color:var(--coral-ink,var(--coral)); border-left-color:var(--coral)}
+.highlights.fix h3{color:var(--green-ink,var(--green)); border-left-color:var(--green)}
+.highlights ul{list-style:none; display:grid; gap:6px}
+.highlights li{position:relative; padding-left:1.4em; font-size:18px; color:var(--text-secondary)}
+.highlights li::before{
+  content:""; position:absolute; left:0; top:.62em;
+  width:5px; height:5px; border-radius:50%; background:var(--accent);
+}
+.highlights.now li::before{background:var(--blue)}
+.highlights.issue li::before{background:var(--coral)}
+.highlights.fix li::before{background:var(--green)}
+
+/* 巢狀子項（清單項目底下再縮排一層的細項）。原本每份簡報各自寫
+   inline style，現在收成正式規則：字級跟內文一樣 14px、圓點縮小且改中性色
+   （不管外層是哪個語意變體，子項一律不搶色），縮排沿用原本的手感。
+   下面刻意把三個變體的巢狀選擇器也列出來，只為了贏過
+   `.highlights.now li::before` 等變體規則的 CSS 特異度（class 數相同時比
+   元素數），否則巢狀圓點會被外層變體色蓋掉。 */
+.highlights ul ul{list-style:none; display:grid; gap:6px; margin-top:6px; padding-left:1.15em}
+.highlights ul ul li{font-size:16px}
+.highlights ul ul li::before,
+.highlights.now ul ul li::before,
+.highlights.issue ul ul li::before,
+.highlights.fix ul ul li::before{width:4px; height:4px; background:var(--text-secondary)}
+
+/* ── ⑤ 圖解：流程 / 時間軸（逐項浮現） ──────────────────── */
+.flow{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:18px}
+.flow .node{
+  padding:11px 22px; border-radius:999px; font-size:18px; font-weight:600;
+  background:var(--surface-2); border:1px solid var(--border); color:var(--text-primary);
+}
+.flow .arrow{color:var(--text-muted); font-size:15px; line-height:1}
+
+.timeline{display:grid; gap:20px; margin-top:22px; grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.timeline .tl-item{position:relative; padding-top:24px}
+.timeline .tl-item::before{
+  content:""; position:absolute; left:0; top:7px; width:100%; height:2px;
+  background:var(--border);
+}
+.timeline .tl-item::after{
+  content:""; position:absolute; left:0; top:2px;
+  width:12px; height:12px; border-radius:50%; background:var(--accent);
+}
+.timeline .tl-label{font-size:19px; font-weight:700; margin-bottom:8px; color:var(--text-primary)}
+.timeline ul{list-style:none; display:grid; gap:5px}
+.timeline li{font-size:16px; color:var(--text-secondary)}
+
+/* ── ⑥ 互動 2：目錄側欄（toc） ─────────────────────────── */
+/* 目錄高度由「每列的可點擊高度」決定：標籤（.label）用 position:absolute
+   脫離文檔流（見下方），.toc a 排版高度因此等於 min-height:28px（見下），
+   不受隱藏標籤的（可能兩行）文字行高影響。
+   28px 是刻意撐出來的點擊／觸控熱區（WCAG 建議 ≥24px、這裡取 28px），
+   靠 .toc a 的 min-height + 上下 padding 達成，圓點本身視覺尺寸維持
+   7×7px（章節封面短橫線 14×3px）不變、只是列的可點範圍變大。
+   width:225px 是刻意留給滑過時展開的標籤的版面——.toc 本身有
+   overflow-y:auto（見下）時，脫離流的標籤若跑到 .toc 版面外會被連帶
+   裁掉，所以要讓 .toc 的內容框本來就寬到能整個裝下最長的標籤（實測 20
+   項裡最長的「AI 與 RD 共用 GitHub 帳號」約 193px，225px 留有餘裕）。
+   圓點靠 align-items:flex-end 貼齊 .toc 的右緣，不受這個寬度影響，視覺
+   位置維持右側 18px 不變。
+   gap:2px、padding:4px 0：因為每列現在本身已有 28px 高，遠高於標籤展開
+   的高度（約 25px），標籤完全落在自己那一列的範圍內、不會像舊版
+   （7px 高的列）那樣探出 .toc 版面上下緣，所以不需要用大 gap／大
+   padding 留緩衝——改成用小 gap 制造列與列之間的呼吸感即可。
+   20 列在 1440×700 下的總高：20×28 + 19×2 + 2×4 = 560+38+8 = 606px，
+   在 700px 可視高度與 max-height:88vh(=616px) 之內完整容納、不觸發捲動。
+   .toc 本身 pointer-events:none：225px 寬的整塊區域對頁面點擊來說形同
+   不存在，滑鼠點在圓點／標籤以外的空白處會穿透到底下的頁面內容、照樣
+   觸發翻頁；.toc a 與 .toc a .label 各自把 pointer-events 撥回 auto，
+   讓圓點與標籤本身仍可點擊。
+   hover 展開標籤：.toc 是 pointer-events:none，容器本身不可靠地接收
+   :hover（不同瀏覽器行為不一致），所以改由 deck.js 監聽個別 .toc a 的
+   mouseenter/mouseleave（它們是 pointer-events:auto，一定收得到事件），
+   對 .toc 加/移除 .hover class，CSS 改用 .toc.hover a .label 觸發顯示
+   （保留 .toc:hover 當作有效瀏覽器上的額外保險，兩條規則是 OR 關係）。 */
+.toc{
+  position:fixed; right:18px; top:50%; transform:translateY(-50%); z-index:50;
+  display:flex; flex-direction:column; gap:2px; align-items:flex-end;
+  width:225px; padding:4px 0;
+  pointer-events:none;
+  /* 保險：即使列高算得再精準，未來簡報頁數更多（30+ 頁）時仍可能
+     超出視窗，所以加上限高＋可滾動。滾動軸隱藏、行為節制（不外溢連動
+     頁面捲動）。 */
+  max-height:88vh; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain;
+  scrollbar-width:none;
+}
+.toc::-webkit-scrollbar{display:none}
+.toc a{
+  position:relative; display:flex; align-items:center;
+  text-decoration:none; color:var(--text-secondary); font-size:14px; font-weight:600;
+  line-height:1.35;
+  min-height:28px; padding:10.5px 0;
+  pointer-events:auto;
+}
+.toc a .tick{
+  width:7px; height:7px; border-radius:50%; flex-shrink:0;
+  background:var(--border-light); transition:background .25s ease,transform .25s ease;
+}
+/* 章節封面頁在目錄上對應的點：改成短橫線，讓章節分界一眼可見。
+   選中時的高亮邏輯（background/scale）不變，沿用 .tick 的規則。 */
+.toc a .tick.dash{width:14px; height:3px; border-radius:2px}
+/* 標籤只在滑過目錄時出現：常駐會壓到頁面右側的內容（表格、卡片）。
+   出現時帶一層底色片，蓋在內容上仍讀得清楚。
+   position:absolute + right:100%：貼在圓點左側，脫離 .toc a 的文檔流
+   （原本用 flex 排列會讓隱藏的標籤照樣撐開每一列的高度）。
+   pointer-events:auto：標籤是使用者主要想點的目標（文字比 7px 圓點好點
+   得多），必須能接收點擊，不能被圓點的視覺大小綁架點擊範圍。
+   white-space:nowrap（不折行）：滑過 .toc 時 20 個標籤會同時全部出現
+   （見下方 .toc.hover 規則，一次顯示全部而非各自 hover），若允許折行，
+   兩行高的標籤會蓋到上下相鄰標籤的文字，反而更難讀；不折行只會在水平
+   方向變長，20 個標題都不長，不會撐出版面。 */
+.toc a .label{
+  position:absolute; right:100%; margin-right:9px; top:50%;
+  transform:translateY(-50%) translateX(6px);
+  opacity:0; pointer-events:auto; white-space:nowrap;
+  background:var(--surface-2); border:1px solid var(--border);
+  padding:3px 9px; border-radius:7px;
+  transition:opacity .25s ease,transform .25s ease;
+}
+.toc:hover a .label, .toc.hover a .label{opacity:1; transform:translateY(-50%)}
+.toc a[aria-current="true"]{color:var(--text-primary)}
+.toc a[aria-current="true"] .tick{background:var(--accent); transform:scale(1.4)}
+
+/* ── ⑦ 互動 3：可折疊段落（collapsible） ───────────────── */
+details.collapsible{
+  margin-top:16px; background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); box-shadow:var(--shadow); padding:0 20px;
+}
+details.collapsible[open]{border-color:var(--accent-dim)}
+details.collapsible > summary{
+  cursor:pointer; list-style:none; padding:14px 0;
+  font-weight:600; font-size:14px; color:var(--text-primary);
+  display:flex; align-items:center; gap:10px; user-select:none;
+}
+details.collapsible > summary::-webkit-details-marker{display:none}
+details.collapsible > summary::before{
+  content:"\25B8";                      /* ▸ */
+  color:var(--accent-ink); font-size:1em;
+  transition:transform .2s ease; display:inline-block;
+}
+details.collapsible[open] > summary::before{transform:rotate(90deg)}   /* ▾ */
+details.collapsible > summary:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:6px}
+details.collapsible > .body{
+  padding:14px 0 16px 1.5em; font-size:14px; color:var(--text-secondary);
+  border-top:1px solid var(--border);
+}
+
+/* ── ⑧ 動態：逐項浮現（.seq → .inview .step） ──────────────
+   漸進增強：隱藏 .step 的規則掛在 html.js 之下，而 .js 是由 deck.js
+   自己加上的。JS 沒載入 / 被停用 / 出錯時，所有內容維持可見，不會隱形。 */
+@media (prefers-reduced-motion:no-preference){
+  .slide > *{animation:rise .5s ease both}
+  @keyframes rise{from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:none}}
+  .js .seq .step{opacity:0; transform:translateY(10px); transition:opacity .5s ease,transform .5s ease}
+  .js .seq.inview .step{opacity:1; transform:none}
+}
+
+/* ── ⑨ 響應式（≤760px 單欄） ───────────────────────────── */
+@media (max-width:760px){
+  .grid{grid-template-columns:1fr !important}
+  .toc a{max-width:none; position:relative}
+  .toc a .label{display:none}
+  /* 觸控熱區：標籤隱藏後 .toc a 只剩 7×7px 的圓點，遠低於 WCAG 24×24px
+     下限。用一個看不見的 ::after（無背景、無邊框）把可點擊範圍撐到
+     28×28px，並用 position:absolute + translate(-50%,-50%) 讓它以圓點的
+     中心點為圓心向外擴張——圓點本身的大小、間距、位置完全不變，只是點擊
+     判定範圍變大（相鄰兩點的熱區可能因此重疊，這是預期的取捨）。 */
+  .toc a::after{
+    content:"";
+    position:absolute; top:50%; left:50%;
+    width:28px; height:28px;
+    transform:translate(-50%,-50%);
+  }
+}
+
+/* ── ⑩ 列印 / 匯出 PDF ─────────────────────────────────── */
+@media print{
+  html{scroll-snap-type:none}
+  body{background:#fff; color:#111}
+  .toc{display:none}
+  section.slide{min-height:auto; page-break-after:always}
+  .slide > *{animation:none !important}          /* 否則列印時可能停在動畫起始的透明狀態 */
+  .seq .step{opacity:1 !important; transform:none !important}
+  details.collapsible{break-inside:avoid}
+  details.collapsible > .body{display:block !important}
+}

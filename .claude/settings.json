@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s http://localhost:*)",
+      "Bash(curl -s http://127.0.0.1:*)",
+      "Bash(node tools/scan-html-simplified.mjs)",
+      "Bash(node tools/scan-html-simplified.mjs *)",
+      "Bash(node tools/check-embed-traps.mjs)",
+      "Bash(node tools/check-embed-traps.mjs *)",
+      "Bash(node tools/check-no-external-resources.mjs)",
+      "Bash(node tools/check-no-external-resources.mjs *)",
+      "Bash(node /Users/anton/Anti/Harness/hooks/scan-simplified.mjs *)",
+      "Bash(shasum -a 256 *)"
+    ]
+  }
+}

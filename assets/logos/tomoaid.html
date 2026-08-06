@@ -1,0 +1,71 @@
+<!-- ============================================================
+     MDbriefing 標誌包 — TomoAid
+     用法：.md frontmatter 寫 `logo: tomoaid`（可搭配 theme: dark 或 light）
+     規格：docs/briefing-spec.md §五「主題槽與標誌槽」
+
+     ⚠️ 標誌顏色一律為官方原色，**不得為了配合背景而修改任何一個顏色**。
+        深色底的可見度問題由「淺色底片」解決（`.logo-plate`，定義在 deck.css，
+        底片的底色與圓角由當前配色主題的 --logo-plate-* 決定）：
+          theme: dark  → 自動加淺色底片，標誌回到它被設計的底色上
+          theme: light → 底片自動歸零，原色直接使用、零加工
+
+     為什麼深底需要底片（實測 #0d0f14 上的對比）：
+       四個小人 — 黃 10.5:1、青 10.8:1、珊瑚 6.4:1、紫 4.6:1 → 都夠
+       中央甜甜圈 — 亮端 #1E6E8C 3.34:1、暗端 #123E5F **1.72:1** → 暗端等於看不見
+     不加底片直接放深底，會變成「四個小人漂在空中、中間破一個洞」。
+
+     👉 若 TomoAid 有官方的反白／單色版標誌，把該版本的 defs 換進【B】段，
+        並在 frontmatter 加 `底片：無`（見規格書 §五），那才是最佳解——
+        底片只是沒有官方反白版時的替代方案。
+
+     一份標誌包固定兩段：
+       【B】標誌 defs → 貼在 <body> 開頭一次（隱藏的 svg defs，含 id="brand-mark"）
+       【C】標誌用法 → C-1 每頁左上／C-2 封面大標誌
+     （原本還有 C-3 結尾小標誌，Anton 決定結尾頁不掛標誌，已移除；
+       .logo-plate.sm 這個尺寸的 CSS 規則留著沒拿掉，之後若要用還在。）
+     （【A】那一段屬於配色主題，標誌包不碰配色，只提供 --brand-name）
+     ============================================================ -->
+
+<style>
+  :root{ --brand-name:"TomoAid"; }
+</style>
+
+<!-- ───────── 【B】標誌 defs（每份簡報貼一次，放 <body> 開頭） ─────────
+     TomoAid 母題（依官方 logo-stack.png 量測重繪）：四個小人分佈四角，
+     弧線身體以各自的頭為圓心、朝中心拱出（頭在弧的凹側），環繞中央甜甜圈。
+     顏色為官方原色，勿修改。 -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="tomo-ctr" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1E6E8C"/><stop offset="1" stop-color="#123E5F"/>
+    </linearGradient>
+    <linearGradient id="tomo-g-y" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F9B233"/><stop offset="1" stop-color="#EF821F"/>
+    </linearGradient>
+    <linearGradient id="tomo-g-p" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9B59E8"/><stop offset="1" stop-color="#7A2BD4"/>
+    </linearGradient>
+    <linearGradient id="tomo-g-c" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F4695C"/><stop offset="1" stop-color="#E23227"/>
+    </linearGradient>
+    <linearGradient id="tomo-g-t" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1ED9C6"/><stop offset="1" stop-color="#10ABA0"/>
+    </linearGradient>
+    <path id="tomo-arc" d="M79.1 8.9 A58 58 0 0 1 13.4 76.4" fill="none" stroke-width="22" stroke-linecap="round"/>
+    <g id="brand-mark">
+      <g><use href="#tomo-arc" stroke="url(#tomo-g-y)"/><circle cx="22" cy="19" r="21.5" fill="#F9B233"/></g>
+      <g transform="rotate(90 100 100)"><use href="#tomo-arc" stroke="url(#tomo-g-p)"/><circle cx="22" cy="19" r="21.5" fill="#9B59E8"/></g>
+      <g transform="rotate(180 100 100)"><use href="#tomo-arc" stroke="url(#tomo-g-c)"/><circle cx="22" cy="19" r="21.5" fill="#F4695C"/></g>
+      <g transform="rotate(270 100 100)"><use href="#tomo-arc" stroke="url(#tomo-g-t)"/><circle cx="22" cy="19" r="21.5" fill="#1ED9C6"/></g>
+      <circle cx="100" cy="100" r="29.5" fill="none" stroke="url(#tomo-ctr)" stroke-width="23.4"/>
+    </g>
+  </defs>
+</svg>
+
+<!-- ───────── 【C】標誌用法（底片會依主題自動出現或消失） ───────── -->
+
+<!-- C-1 每頁左上角（複製到每個 section.slide 內第一行） -->
+<div class="logo"><span class="logo-plate"><svg width="20" height="20" viewBox="-9 -9 218 218"><use href="#brand-mark"/></svg></span>TomoAid</div>
+
+<!-- C-2 封面大標誌（只在 cover 用，h1 之前） -->
+<span class="logo-plate lg" style="margin-bottom:30px"><svg width="164" height="164" viewBox="-9 -9 218 218" aria-hidden="true"><use href="#brand-mark"/></svg></span>
